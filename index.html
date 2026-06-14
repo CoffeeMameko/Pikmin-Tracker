@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pikmin Bloom 裝飾收集</title>
+<style>
+:root{
+  --ink:#2a3545;
+  --ink-soft:#5b6677;
+  --muted:#9aa3b2;
+  --bg:#fafaf7;
+  --card:#fff;
+  --line:#ececea;
+  --line-soft:#f3f3f0;
+  --c-紅:#d96a6a; --c-黃:#e8c463; --c-藍:#6a92d9;
+  --c-白:#f0eee8; --c-紫:#9a73c4; --c-岩:#9aa0a8;
+  --c-粉:#e3a6c4; --c-冰:#a7d3df;
+  --rare:#f6c961;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--ink)}
+body{
+  font-family:"Songti TC","Songti SC","STSong","Source Han Serif TC","Noto Serif TC",
+    "PMingLiU","MingLiU",ui-serif,serif;
+  font-weight:400;line-height:1.55;padding-bottom:80px;
+  letter-spacing:.01em;
+  min-height:100vh;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:0 32px}
+header{padding:32px 0 20px}
+h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:var(--ink)}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:28px}
+.header-top h1{margin-bottom:0}
+.header-top .search{flex:0 0 auto}
+.header-top .search input{width:240px}
+.overall{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
+.overall .num{font-size:32px;font-weight:400;color:var(--ink);letter-spacing:.02em}
+.digit-slot{display:inline-block;overflow:hidden;height:1em;line-height:1em;vertical-align:baseline}
+.digit-stack{display:flex;flex-direction:column;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+.digit-stack > span{display:block;line-height:1em;height:1em;font-variant-numeric:tabular-nums}
+.overall .total{color:var(--muted);font-size:15px}
+.overall .pct{margin-left:auto;font-size:14px;color:var(--ink-soft);font-feature-settings:"tnum"}
+.bar{height:3px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;background:var(--ink);transition:width .5s cubic-bezier(.4,0,.2,1);border-radius:2px}
+.color-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 18px;margin-top:22px}
+.cs{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-soft);font-feature-settings:"tnum"}
+.cs .dot{width:8px;height:8px;border-radius:50%}
+.cs .label{color:var(--ink)}
+.cs .val{margin-left:auto;color:var(--muted)}
+
+.controls{padding:8px 0 16px;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);position:-webkit-sticky;position:sticky;top:0;background:var(--bg);z-index:99;-webkit-transform:translate3d(0,0,10px);transform:translate3d(0,0,10px)}
+.filters{display:flex;gap:4px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;padding:12px 0 10px;margin:0 -20px;padding-left:20px;padding-right:20px}
+.filters::-webkit-scrollbar{display:none}
+.chip{padding:5px 12px;border-radius:0;border:none;background:transparent;
+  font-size:13px;color:var(--muted);cursor:pointer;font-family:inherit;
+  border-bottom:1px solid transparent;transition:all .15s}
+.chip:hover{color:var(--ink-soft)}
+.chip.active{color:var(--ink);border-bottom-color:var(--ink)}
+.search{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);transition:border-color .15s}
+.search:focus-within{border-bottom-color:var(--ink)}
+.search-icon{width:14px;height:14px;color:var(--muted);flex:0 0 auto}
+.search input{width:100%;padding:8px 0;border:none;
+  font-size:14px;font-family:inherit;background:transparent;color:var(--ink)}
+.search input:focus{outline:none}
+.search input::placeholder{color:var(--muted)}
+.search input::placeholder{color:var(--muted)}
+
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:0 48px;padding:8px 0}
+.column{min-width:0}
+@media (max-width:680px){
+  .columns{grid-template-columns:1fr;gap:0}
+}
+
+.section-title{font-size:12px;color:var(--muted);margin:28px 0 14px;font-weight:400;
+  letter-spacing:.15em;text-transform:uppercase}
+.item{position:relative;padding:14px 18px;margin-bottom:10px;z-index:1}
+.item-head{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+.item-code{font-size:11px;color:var(--muted);font-feature-settings:"tnum";min-width:32px;letter-spacing:.05em}
+.item-name{font-size:16px;font-weight:400;flex:1;color:var(--ink)}
+.item-progress{font-size:12px;color:var(--muted);font-feature-settings:"tnum"}
+.item-note{font-size:11px;color:var(--muted);margin-bottom:10px;letter-spacing:.02em}
+.item-location{font-size:11px;color:var(--muted);margin-bottom:10px;letter-spacing:.02em}
+
+.variants{display:flex;gap:8px;flex-wrap:wrap}
+.v{width:28px;height:28px;border-radius:50%;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:10px;
+  position:relative;transition:all .2s;user-select:none;
+  background:transparent;border:1px solid var(--line)}
+.v .swatch{width:14px;height:14px;border-radius:50%;transition:all .2s}
+.v.disabled{opacity:.3;cursor:not-allowed}
+.v.disabled .swatch{background:transparent !important;border:1px dashed var(--line)}
+.v.collected{border-color:var(--ink)}
+.v.collected .swatch{width:20px;height:20px}
+
+.tip{font-size:12px;color:var(--muted);letter-spacing:.02em}
+.btn-link{background:none;border:none;font-family:inherit;font-size:12px;
+  color:var(--muted);cursor:pointer;letter-spacing:.05em;padding:4px 0}
+.btn-link:hover{color:var(--ink)}
+.empty{text-align:center;color:var(--muted);padding:40px 0;font-size:14px}
+
+.modal{position:fixed;inset:0;background:rgba(42,53,69,.25);z-index:100;
+  display:flex;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px)}
+.modal[hidden]{display:none}
+.modal-inner{background:var(--bg);width:100%;max-width:760px;max-height:88vh;
+  overflow-y:auto;padding:24px 20px 32px;border-radius:8px 8px 0 0}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-head h2{font-size:18px;font-weight:500;letter-spacing:.08em}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;letter-spacing:.05em}
+.field input{width:100%;padding:8px 0;border:none;border-bottom:1px solid var(--line);
+  font-size:14px;font-family:inherit;background:transparent;color:var(--ink)}
+.field input:focus{outline:none;border-bottom-color:var(--ink)}
+.color-toggle{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ct{display:flex;align-items:center;gap:6px;padding:6px 12px;
+  border:1px solid var(--line);background:transparent;cursor:pointer;
+  font-family:inherit;font-size:13px;color:var(--muted);opacity:.45;transition:all .15s}
+.ct.on{opacity:1;color:var(--ink);border-color:var(--ink)}
+.ct .swatch{width:10px;height:10px;border-radius:50%}
+.btn-primary{margin-top:8px;padding:10px 20px;background:var(--ink);color:#fff;
+  border:none;font-family:inherit;font-size:14px;cursor:pointer;letter-spacing:.05em}
+.custom-title{margin-top:32px;font-size:12px;color:var(--muted);font-weight:400;
+  letter-spacing:.15em;text-transform:uppercase}
+.custom-list{list-style:none;margin-top:12px}
+.custom-list li{display:flex;align-items:baseline;gap:10px;padding:10px 0;
+  border-bottom:1px solid var(--line-soft);font-size:14px}
+.custom-list .code{font-size:11px;color:var(--muted);min-width:32px}
+.custom-list .name{flex:1}
+.custom-list .del{background:none;border:none;color:var(--muted);
+  font-family:inherit;font-size:12px;cursor:pointer}
+.custom-list .del:hover{color:#c44}
+.rare-toggle{font-size:11px;color:var(--muted);background:none;border:none;
+  font-family:inherit;cursor:pointer;padding:2px 6px;display:flex;align-items:center;gap:3px;
+  transition:color .15s;letter-spacing:.05em}
+.rare-toggle:hover{color:var(--ink)}
+.rare-toggle .arrow{transition:transform .25s;display:inline-block}
+.item.expanded .rare-toggle{color:var(--ink)}
+.item.expanded .rare-toggle .arrow{transform:rotate(90deg)}
+.rare-panel{max-height:0;overflow:hidden;transition:max-height .3s ease,margin-top .3s ease}
+.item.expanded .rare-panel{max-height:200px;margin-top:12px;overflow:visible}
+.rare-inner{position:relative;padding:14px 18px;background:rgba(42,53,69,.04);border-radius:10px;
+  transform:translateX(24px);opacity:0;transition:transform .3s ease,opacity .25s ease}
+.item.expanded .rare-inner{transform:translateX(0);opacity:1}
+.rare-label{font-size:10px;color:var(--muted);letter-spacing:.15em;margin-bottom:8px;
+  text-transform:uppercase;display:flex;align-items:center;justify-content:space-between}
+.code-input{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.prefix-group{display:flex;gap:4px}
+.pfx{padding:6px 12px;border:1px solid var(--line);background:transparent;cursor:pointer;
+  font-family:inherit;font-size:13px;color:var(--muted);transition:all .15s}
+.pfx:hover{color:var(--ink-soft)}
+.pfx.active{color:#fff;background:var(--ink);border-color:var(--ink)}
+.code-input input{flex:1;min-width:100px;max-width:160px;margin:0}
+.edit-item{background:none;border:none;font-family:inherit;font-size:11px;
+  color:var(--muted);cursor:pointer;padding:2px 6px;margin-left:8px;letter-spacing:.05em;
+  transition:color .15s}
+.edit-item:hover{color:var(--ink)}
+#extraActions{margin-top:14px;display:flex;gap:16px;align-items:center}
+.edit-item{display:none}
+body.edit-mode .edit-item{display:inline-block}
+body.edit-mode #openEdit{color:var(--ink);font-weight:600}
+.add-item{padding:16px 0;border-bottom:1px solid var(--line-soft);
+  display:flex;align-items:center;gap:12px;cursor:pointer;color:var(--muted);
+  transition:color .15s;background:none;border-left:none;border-right:none;border-top:none;
+  width:100%;text-align:left;font-family:inherit;letter-spacing:.05em}
+.add-item:hover{color:var(--ink)}
+.add-item .plus{font-size:18px;min-width:32px;font-weight:300}
+.add-item .label{font-size:14px}
+.progress-frame{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1;overflow:visible;transform:translateZ(0)}
+.progress-frame rect{fill:none;stroke:var(--ink);stroke-width:2;
+  transition:stroke-dashoffset .4s ease}
+  .rare-inner .progress-frame rect{stroke:var(--rare)}
+.rare-inner{position:relative}
+.region-tag-row{display:flex;justify-content:flex-end;margin:-4px 0 8px 0}
+.region-tag{display:inline-block;padding:3px 10px;background:#8b2929;color:#fff;
+  border-radius:6px;font-size:10px;letter-spacing:.15em}
+.help-section{margin-bottom:22px}
+.help-section h3{font-size:13px;font-weight:500;letter-spacing:.12em;margin-bottom:10px;color:var(--ink)}
+.help-section ul{list-style:none;padding-left:0}
+.help-section li{font-size:13px;color:var(--ink-soft);margin-bottom:6px;line-height:1.7;padding-left:14px;position:relative}
+.help-section li::before{content:"・";color:var(--muted);position:absolute;left:0}
+.help-section kbd{font-family:inherit;background:rgba(42,53,69,.08);padding:1px 6px;border-radius:3px;font-size:12px}
+.header-tools{display:flex;align-items:center;gap:16px}
+#helpModal{
+  align-items:flex-start;
+  padding-top:120px;
+  transition:opacity .2s ease;
+}
+#helpModal[hidden]{
+  display:flex;
+  opacity:0;
+  pointer-events:none;
+}
+#helpModal .modal-inner{
+  border-radius:10px;
+  max-height:calc(100vh - 160px);
+  overflow-y:auto;
+  scrollbar-width:none;
+  transition:transform .2s ease;
+}
+#helpModal .modal-inner::-webkit-scrollbar{display:none}
+
+#helpModal .modal-inner{scrollbar-width:none}
+#helpModal[hidden] .modal-inner{
+  transform:translateY(-16px);
+}
+body:has(.modal:not([hidden])){overflow:hidden}
+#editModal{
+  align-items:flex-start;
+  padding-top:120px;
+  transition:opacity .2s ease;
+}
+#editModal[hidden]{
+  display:flex;
+  opacity:0;
+  pointer-events:none;
+}
+#editModal .modal-inner{
+  border-radius:10px;
+  max-height:calc(100vh - 160px);
+  transition:transform .2s ease;
+}
+#editModal[hidden] .modal-inner{
+  transform:translateY(-16px);
+}
+.menu-fab{
+  position:fixed;bottom:20px;right:20px;z-index:1000;
+  background:var(--ink);color:#fff;border:none;
+  border-radius:8px;padding:10px;
+  cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.15);
+  transition:transform .15s, box-shadow .15s;
+  display:flex;align-items:center;justify-content:center;
+  width:44px;height:44px;
+}
+.menu-fab:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.menu-fab svg{
+  position:absolute;
+  top:50%;left:50%;
+  width:20px;height:20px;
+  transition:opacity .2s ease, transform .2s ease;
+}
+.menu-fab .icon-disk{transform:translate(-50%,-50%) scale(1);opacity:1}
+.menu-fab .icon-close{transform:translate(-50%,-50%) scale(.7);opacity:0}
+.menu-fab.open .icon-disk{transform:translate(-50%,-50%) scale(.7);opacity:0}
+.menu-fab.open .icon-close{transform:translate(-50%,-50%) scale(1);opacity:1}
+.menu-fab:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.2)}
+
+.menu-popup{
+  position:fixed;bottom:70px;right:20px;z-index:1000;
+  background:var(--card);border:1px solid var(--line);
+  border-radius:10px;padding:8px;
+  display:flex;flex-direction:column;
+  box-shadow:0 6px 28px rgba(0,0,0,.12);
+  min-width:160px;
+  animation:menuIn .15s ease-out;
+}
+.menu-popup[hidden]{display:none}
+@keyframes menuIn{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.menu-popup .btn-link{
+  text-align:left;padding:8px 14px;border-radius:6px;font-size:13px;
+  transition:background .15s, color .15s;
+}
+.menu-popup .btn-link:hover{background:rgba(42,53,69,.06);color:var(--ink)}
+.menu-popup #reset{color:#c44}
+.menu-popup #reset:hover{background:rgba(196,68,68,.08);color:#a33}
+.v.labeled{
+  width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;
+  border-width:1.5px;border-style:solid;border-color:var(--line);
+  color:#c5cbd3;
+  background:transparent;
+  transition:background .15s, border-color .15s, color .15s;
+}
+.v.labeled .swatch{display:none}
+.v.labeled.collected{color:var(--ink)}
+.v.labeled .lbl-cn1{font-size:14px;font-family:"Songti TC","Source Han Serif TC",serif;line-height:1}
+.v.labeled .lbl-cn2{font-size:10px;font-family:"Songti TC","Source Han Serif TC",serif;line-height:1.05;text-align:center}
+.v.labeled .lbl-mix{font-size:11px;font-family:"Source Serif Pro",Georgia,serif;line-height:1;letter-spacing:.02em}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="header-top">
+    <h1>Pikmin Bloom 裝飾收集</h1>
+    <div class="search">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="search" placeholder="搜尋名稱、編號或地點">
+    </div>
+      <button class="btn-link" id="openHelp">說明</button>
+    </div>
+  </div>
+</header>
+</div>
+
+<div class="controls">
+  <div class="wrap">
+    <div class="overall">
+      <span class="num" id="collected">0</span>
+      <span class="total">／ <span id="total">0</span></span>
+      <span class="pct" id="pct">0.0%</span>
+    </div>
+    <div class="bar"><div class="bar-fill" id="bar"></div></div>
+    <div class="color-stats" id="colorStats"></div>
+    <div class="filters" id="filters"></div>
+  </div>
+</div>
+
+<div class="wrap">
+<main class="columns">
+  <section class="column" id="listN"></section>
+  <section class="column" id="listL"></section>
+</main>
+</div>
+
+<div class="modal" id="editModal" hidden>
+  <div class="modal-inner">
+    <div class="modal-head">
+      <h2 id="modalTitle">新增系列</h2>
+      <button class="btn-link" id="closeEdit">關閉</button>
+    </div>
+
+    <div class="field" id="codeField">
+      <label>類型與編號(稀有編號需對應已存在的常駐系列)</label>
+      <div class="code-input">
+        <div class="prefix-group" id="prefixGroup">
+          <button type="button" class="pfx active" data-pfx="N">常駐</button>
+          <button type="button" class="pfx" data-pfx="R">稀有</button>
+          <button type="button" class="pfx" data-pfx="L">限定</button>
+        </div>
+        <input id="newNum" type="number" min="1" placeholder="編號" inputmode="numeric">
+      </div>
+    </div>
+    <div class="field">
+      <label>名稱</label>
+      <input id="newName" placeholder="例：夏日扇子">
+    </div>
+    <div class="field">
+      <label>備註(可留空)</label>
+      <input id="newNote" placeholder="例：2026 June">
+    </div>
+    <div class="field">
+      <label>地點(可留空)</label>
+      <input id="newLocation" placeholder="例：餐廳、咖啡廳">
+    </div>
+    <div class="field">
+      <label>顏色(點擊切換是否存在)</label>
+      <div class="color-toggle" id="colorToggle"></div>
+    </div>
+    <button class="btn-primary" id="saveNew">新增系列</button>
+    <div id="extraActions"></div>
+
+    <div id="customSection">
+      <h3 class="custom-title">已新增的系列</h3>
+      <ul class="custom-list" id="customList"></ul>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="helpModal" hidden>
+  <div class="modal-inner">
+    <div class="modal-head">
+      <h2>使用說明</h2>
+      <button class="btn-link" id="closeHelp">關閉</button>
+    </div>
+
+    <div class="help-section">
+      <h3>編輯收集狀態</h3>
+      <ul>
+        <li>點擊任何色點即可切換該顏色的收集狀態</li>
+        <li>項目周圍的描邊框會依收集比例順時針環繞，全部收完就形成完整框線</li>
+        <li>頂部總進度條、百分比、八色分項統計會即時跟著更新</li>
+      </ul>
+    </div>
+
+    <div class="help-section">
+      <h3>稀有系列</h3>
+      <ul>
+        <li>有稀有版本的項目，右側會顯示「稀有 ▸」按鈕</li>
+        <li>點開後底下會展開稀有版本面板，描邊為金色</li>
+        <li>稀有與一般版本的進度獨立計算，分開顯示</li>
+      </ul>
+    </div>
+
+    <div class="help-section">
+      <h3>篩選與搜尋</h3>
+      <ul>
+        <li>頂部三個分頁可切換 全部／常駐／限定</li>
+        <li>色彩標籤讓你只看擁有某種顏色的項目</li>
+        <li>搜尋框可用編號(如 <kbd>N01</kbd>)或名稱(如 <kbd>廚師帽</kbd>)即時過濾</li>
+      </ul>
+    </div>
+
+    <div class="help-section">
+      <h3>新增系列</h3>
+      <ul>
+        <li>在常駐欄或限定欄頂部按「＋ 新增」打開編輯視窗</li>
+        <li>選擇類型：常駐(N)、稀有(R)、限定(L)</li>
+        <li>稀有系列的編號必須對應已存在的常駐系列(例如 R01 需要先有 N01)</li>
+      </ul>
+    </div>
+
+    <div class="help-section">
+      <h3>編輯既有系列</h3>
+      <ul>
+        <li>按底部「編輯」進入編輯模式，所有項目右側會出現編輯連結</li>
+        <li>可修改名稱、備註、地點、可用顏色組合</li>
+        <li>內建系列改完隨時可按「重設為原始」還原</li>
+        <li>自訂系列可在編輯視窗內直接刪除</li>
+      </ul>
+    </div>
+
+    <div class="help-section">
+      <h3>備份與還原</h3>
+      <ul>
+        <li>所有資料存在瀏覽器 localStorage，清快取會消失</li>
+        <li>建議定期按「匯出 JSON」存一份備份</li>
+        <li>換裝置或清完快取時用「匯入 JSON」還原</li>
+        <li>Excel 格式(CSV)方便用試算表整理大量資料再匯回</li>
+      </ul>
+    </div>
+
+    <div class="help-section">
+      <h3>清除全部</h3>
+      <ul>
+        <li>只會清除打勾紀錄</li>
+        <li>自訂系列、修改過的內建系列都會保留</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<button class="menu-fab" id="menuFab" aria-label="選單">
+  <svg class="icon-disk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+    <polyline points="17 21 17 13 7 13 7 21"/>
+    <polyline points="7 3 7 8 15 8"/>
+  </svg>
+  <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+</button>
+<div class="menu-popup" id="menuPopup" hidden>
+  <button class="btn-link" id="openEdit">編輯</button>
+  <button class="btn-link" id="exportData">匯出 JSON</button>
+  <button class="btn-link" id="importData">匯入 JSON</button>
+  <button class="btn-link" id="exportCsv">匯出 Excel</button>
+  <button class="btn-link" id="importCsv">匯入 Excel</button>
+  <button class="btn-link" id="reset">清除全部</button>
+</div>
+<input type="file" id="importFile" accept=".json,application/json" style="display:none">
+<input type="file" id="importCsvFile" accept=".csv" style="display:none">
+
+<script>
+const DATA = {"colors":["紅","黃","藍","白","紫","岩","粉","冰"],"items":[{"code":"N01","name":"廚師帽","note":"","variants":[true,true,true,true,true,true,true,true],"location":"餐廳"},{"code":"N02","name":"咖啡杯","note":"","variants":[true,true,true,true,true,true,true,true],"location":"咖啡廳"},{"code":"N03","name":"馬卡龍","note":"","variants":[true,true,true,true,true,true,true,false],"location":"甜點店"},{"code":"N04","name":"甜甜圈","note":"","variants":[true,true,true,true,true,true,true,false],"location":"甜點店"},{"code":"N05","name":"爆米花","note":"","variants":[true,true,true,true,true,true,true,false],"location":"電影院"},{"code":"N06","name":"牙刷","note":"","variants":[true,true,true,true,true,true,true,false],"location":"藥局"},{"code":"N07","name":"蒲公英","note":"","variants":[true,true,true,true,true,true,true,false],"location":"動物園"},{"code":"N08","name":"鍬形蟲","note":"","variants":[true,true,true,true,true,true,true,true],"location":"森林"},{"code":"N09","name":"橡栗","note":"","variants":[true,true,true,true,true,true,true,true],"location":"森林"},{"code":"N10","name":"擬餌","note":"","variants":[true,true,true,true,true,true,true,false],"location":"水邊"},{"code":"N11","name":"郵票","note":"","variants":[true,true,true,true,true,true,true,false],"location":"郵局"},{"code":"N12","name":"相框","note":"","variants":[true,true,true,true,true,true,true,false],"location":"美術館"},{"code":"N13","name":"飛機玩具","note":"","variants":[true,true,true,true,true,true,true,false],"location":"機場"},{"code":"N14","name":"電車紙模型","note":"","variants":[true,true,true,true,true,true,true,false],"location":"車站"},{"code":"N15","name":"票券","note":"","variants":[true,true,true,true,true,true,true,false],"location":"車站"},{"code":"N16","name":"貝殼","note":"","variants":[true,true,true,true,true,true,true,false],"location":"海灘"},{"code":"N17","name":"漢堡","note":"","variants":[true,true,true,true,true,true,true,false],"location":"漢堡店"},{"code":"N18","name":"瓶蓋","note":"","variants":[true,true,true,true,true,true,true,false],"location":"便利店"},{"code":"N19","name":"零食","note":"","variants":[true,true,true,true,true,true,true,false],"location":"便利店"},{"code":"N20","name":"蘑菇","note":"","variants":[true,true,true,true,true,true,true,false],"location":"超市"},{"code":"N21","name":"香蕉","note":"","variants":[true,true,true,true,true,true,true,false],"location":"超市"},{"code":"N22","name":"法國麵包","note":"","variants":[true,true,true,true,true,true,true,false],"location":"麵包店"},{"code":"N23","name":"剪刀","note":"","variants":[true,true,true,true,true,true,true,false],"location":"美容院"},{"code":"N24","name":"髮圈","note":"","variants":[true,true,true,true,true,true,true,false],"location":"服裝店"},{"code":"N25","name":"幸運草","note":"","variants":[true,true,true,true,true,true,true,true],"location":"公園"},{"code":"N26","name":"四葉幸運草","note":"","variants":[true,true,true,true,true,true,true,true],"location":"公園"},{"code":"N27","name":"迷你書","note":"","variants":[true,true,true,true,true,true,true,false],"location":"圖書館"},{"code":"N28","name":"路邊貼紙A","note":"","variants":[true,true,true,true,true,true,true,true],"location":"路邊"},{"code":"N29","name":"路邊貼紙B","note":"","variants":[true,true,true,true,true,true,true,true],"location":"路邊"},{"code":"N30","name":"路邊貼紙C","note":"","variants":[true,true,true,true,true,true,true,true],"location":"路邊"},{"code":"N31","name":"金幣","note":"","variants":[true,true,true,true,true,true,true,true],"location":"路邊"},{"code":"N32","name":"壽司","note":"","variants":[true,true,true,true,true,true,true,false],"location":"壽司餐廳"},{"code":"N33","name":"山形徽章","note":"","variants":[true,true,true,true,true,true,true,false],"location":"山丘"},{"code":"N34","name":"球型鑰匙圈","note":"","variants":[true,true,true,true,true,true,true,false],"location":"體育館"},{"code":"N35","name":"葉子帽A","note":"","variants":[false,false,true,false,false,false,false,false],"location":"路邊-雨天"},{"code":"N36","name":"葉子帽B","note":"","variants":[false,false,true,false,false,false,false,false],"location":"路邊-雨天"},{"code":"N37","name":"葉子帽C","note":"","variants":[false,false,true,false,false,false,false,false],"location":"路邊-雨天"},{"code":"N38","name":"雪","note":"","variants":[false,false,true,true,false,false,false,true],"location":"路邊-下雪"},{"code":"N39","name":"主題樂園票券A","note":"","variants":[true,true,true,false,false,false,false,false],"location":"主題樂園"},{"code":"N40","name":"主題樂園票券B","note":"","variants":[true,true,true,false,false,false,false,false],"location":"主題樂園"},{"code":"N41","name":"公車紙模型","note":"","variants":[true,true,true,true,true,true,true,false],"location":"公車站"},{"code":"N42","name":"披薩","note":"","variants":[true,true,true,true,true,true,true,false],"location":"義式餐廳"},{"code":"N43","name":"義大利麵","note":"","variants":[true,true,true,true,true,true,true,false],"location":"義式餐廳"},{"code":"N44","name":"拉麵鑰匙圈","note":"","variants":[true,true,true,true,true,true,true,false],"location":"拉麵店"},{"code":"N45","name":"橋形徽章","note":"","variants":[true,true,true,true,true,true,true,false],"location":"橋樑"},{"code":"N46","name":"飯店備品","note":"","variants":[true,true,true,true,true,true,true,false],"location":"飯店"},{"code":"N47","name":"化妝品","note":"","variants":[true,true,true,true,true,true,true,false],"location":"化妝品商店"},{"code":"N48","name":"運勢（大吉）","note":"","variants":[true,true,true,true,true,true,true,false],"location":"神社和寺廟"},{"code":"N49","name":"運勢（中吉）","note":"","variants":[true,true,true,true,true,true,true,false],"location":"神社和寺廟"},{"code":"N50","name":"運勢（小吉）","note":"","variants":[true,true,true,true,true,true,true,false],"location":"神社和寺廟"},{"code":"N51","name":"運勢（吉）","note":"","variants":[true,true,true,true,true,true,true,false],"location":"神社和寺廟"},{"code":"N52","name":"運勢（末吉）","note":"","variants":[true,true,true,true,true,true,true,false],"location":"神社和寺廟"},{"code":"N53","name":"電池A","note":"","variants":[false,true,false,false,false,false,false,false],"location":"電器行"},{"code":"N54","name":"電池B","note":"","variants":[false,true,false,false,false,false,false,false],"location":"電器行"},{"code":"N55","name":"電池C","note":"","variants":[false,true,false,false,false,false,false,false],"location":"電器行"},{"code":"N56","name":"電池D","note":"","variants":[false,true,false,false,false,false,false,false],"location":"電器行"},{"code":"N57","name":"電池E","note":"","variants":[false,true,false,false,false,false,false,false],"location":"電器行"},{"code":"N58","name":"電池F","note":"","variants":[false,true,false,false,false,false,false,false],"location":"電器行"},{"code":"N59","name":"仙女燈A","note":"","variants":[false,true,false,false,false,false,false,false],"location":"電器行"},{"code":"N60","name":"仙女燈B","note":"","variants":[false,true,false,false,false,false,false,false],"location":"電器行"},{"code":"N61","name":"一碗咖哩","note":"","variants":[true,true,true,true,true,true,true,false],"location":"咖哩餐廳"},{"code":"N62","name":"工具","note":"","variants":[true,true,true,true,true,true,true,false],"location":"五金行"},{"code":"N63","name":"校徽胸針","note":"","variants":[true,true,true,false,false,false,false,false],"location":"大學&amp;學院"},{"code":"N64","name":"塔可餅","note":"","variants":[true,true,true,true,true,true,true,false],"location":"墨西哥餐廳"},{"code":"N65","name":"洗衣用品","note":"","variants":[true,true,true,true,true,true,true,false],"location":"自助洗衣店&amp;乾洗店"},{"code":"N66","name":"韓國泡菜","note":"","variants":[true,true,true,true,true,true,true,true],"location":"韓國餐廳"},{"code":"N67","name":"文具店","note":"","variants":[true,true,true,true,true,true,true,true],"location":"文具店"},{"code":"R01","name":"稀有廚師帽","note":"","variants":[true,true,true,true,true,true,true,false],"location":"餐廳"},{"code":"R02","name":"稀有咖啡杯","note":"","variants":[true,true,true,true,true,true,true,false],"location":"咖啡廳"},{"code":"R10","name":"稀有擬餌","note":"","variants":[true,true,true,true,true,true,true,false],"location":"水邊"},{"code":"R15","name":"稀有票券","note":"","variants":[true,false,false,false,false,false,false,false],"location":"車站"},{"code":"R21","name":"稀有香蕉","note":"","variants":[true,true,true,true,true,true,true,false],"location":"超市"},{"code":"R22","name":"稀有法國麵包","note":"","variants":[true,true,true,true,true,true,true,false],"location":"麵包店"},{"code":"R23","name":"稀有剪刀","note":"","variants":[true,true,true,true,true,true,true,false],"location":"美容院"},{"code":"R25","name":"稀有幸運草","note":"","variants":[true,true,true,true,true,true,true,true],"location":"公園"},{"code":"R26","name":"稀有四葉幸運草","note":"","variants":[true,true,true,true,true,true,true,true],"location":"公園"},{"code":"R31","name":"稀有金幣","note":"","variants":[true,true,true,true,true,true,true,true],"location":"路邊"},{"code":"L01","name":"瑪利歐帽子","note":"","variants":[true,true,true,false,true,false,false,false]},{"code":"L02","name":"農曆新年裝飾：紅色","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L03","name":"農曆新年裝飾：金色","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L04","name":"西洋棋：白","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L05","name":"西洋棋：黑","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L06","name":"手指滑板","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L07","name":"花札1・荻","note":"","variants":[true,true,true,false,true,false,false,false]},{"code":"L08","name":"花札1・芒","note":"","variants":[true,true,true,false,true,false,false,false]},{"code":"L09","name":"花札1・櫻","note":"","variants":[true,true,true,false,true,false,false,false]},{"code":"L10","name":"花札1・藤","note":"","variants":[true,true,true,false,true,false,false,false]},{"code":"L11","name":"花札1・菖蒲","note":"","variants":[true,true,true,false,true,false,false,false]},{"code":"L12","name":"花札1・牡丹","note":"","variants":[true,true,true,false,true,false,false,false]},{"code":"L13","name":"花札2・樣式I","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L14","name":"花札2・樣式II","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L15","name":"花札2・樣式III","note":"","variants":[false,false,false,false,false,true,true,false]},{"code":"L16","name":"南瓜燈","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L17","name":"萬聖節糖果","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L18","name":"萬聖節燈籠","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L19","name":"一週年紀念零食","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L20","name":"Koppaite太空衣","note":"","variants":[true,true,true,false,false,false,false,false]},{"code":"L21","name":"連指手套","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L22","name":"2023眼鏡","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L23","name":"2024眼鏡","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L24","name":"情人節貼紙","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L25","name":"反向情人節貼紙","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L26","name":"禮物貼紙・金色","note":"","variants":[true,true,true,true,true,false,true,false]},{"code":"L27","name":"復活節彩蛋","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L28","name":"兔子蛋","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L29","name":"運動鞋鑰匙圈","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L30","name":"Pikmin 4 太空船","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L31","name":"Pikmin 4 玩具","note":"","variants":[true,true,true,true,true,true,true,true]},{"code":"L32","name":"麻將・1","note":"（東南西北中發白）","variants":[true,true,true,true,true,true,true,false]},{"code":"L33","name":"麻將・2","note":"（一萬、一條、一筒、五萬、九萬、九條、九筒）","variants":[true,true,true,true,true,true,true,false]},{"code":"L34","name":"麻將・3","note":"（兩萬、三萬、四萬、六萬、七萬、八萬、九萬）","variants":[false,true,true,true,true,true,true,false]},{"code":"L35","name":"麻將・4","note":"（二條、三條、四條、六條、七條、八條）","variants":[false,true,true,true,true,true,true,false]},{"code":"L36","name":"麻將・5","note":"（五條）","variants":[true,true,false,true,false,false,false,false]},{"code":"L37","name":"冰淇淋・經典","note":"","variants":[true,true,true,true,true,true,true,true]},{"code":"L38","name":"冰淇淋・2024","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L39","name":"拼圖2021・冬季回憶","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L40","name":"拼圖2022・夏季回憶","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L41","name":"拼圖2023・夏季回憶","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L42","name":"拼圖2024・秋季回憶","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L43","name":"春季貼紙","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L44","name":"夏季貼紙","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L45","name":"秋季貼紙","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L46","name":"冬季貼紙","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L47","name":"撲克牌・梅花 I","note":"紅3 黃4 藍A 白Q 紫9 岩6 粉2","variants":[true,true,true,true,true,true,true,false]},{"code":"L48","name":"撲克牌・梅花 II","note":"紅5 黃J 藍8 紫K 岩10 粉7","variants":[true,true,true,false,true,true,true,false]},{"code":"L49","name":"撲克牌・菱形 I","note":"紅A 黃2 藍3 白4 紫6 岩7 粉5","variants":[true,true,true,true,true,true,true,false]},{"code":"L50","name":"撲克牌・菱形 II","note":"紅8 黃9 藍10 白J 岩K 粉Q","variants":[true,true,true,true,false,true,true,false]},{"code":"L51","name":"撲克牌・鬼牌","note":"","variants":[false,false,false,false,true,false,false,false]},{"code":"L52","name":"起司","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L53","name":"珊瑚","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L54","name":"顏料","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L55","name":"緞帶花飾","note":"","variants":[true,true,false,false,false,false,false,false]},{"code":"L56","name":"三週年紀念紙杯蛋糕","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L57","name":"裝飾球","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L58","name":"2025派對禮炮","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L59","name":"巧克力","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L60","name":"里約嘉年華","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L61","name":"下午茶","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L62","name":"任天堂主機","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L63","name":"迷你樂器","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L64","name":"衝浪板鑰匙圈","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L65","name":"刨冰","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L66","name":"月餅","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L67","name":"照片徽章","note":"","variants":[true,false,false,false,false,false,false,false]},{"code":"L68","name":"亡靈節","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L69","name":"四週年紀念花盒","note":"","variants":[true,true,true,true,true,true,true,true]},{"code":"L70","name":"四週年紀念零食","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L71","name":"2025裝飾品","note":"","variants":[true,true,true,true,true,true,true,true]},{"code":"L72","name":"奶嘴","note":"","variants":[true,false,false,false,false,false,false,false]},{"code":"L73","name":"日式年菜","note":"2026 January","variants":[true,true,true,true,true,true,true,true]},{"code":"L74","name":"金色飛機玩具","note":"","variants":[false,true,false,false,false,false,false,false]},{"code":"L75","name":"2026巧克力","note":"2026 February","variants":[true,true,true,true,true,true,true,true]},{"code":"L76","name":"彩色粉末","note":"2026 March","variants":[true,true,true,true,true,true,true,true]},{"code":"L77","name":"荷蘭木鞋鑰匙圈","note":"2026 April","variants":[true,true,true,true,true,true,true,true]},{"code":"L78","name":"遊戲卡匣","note":"2026 May","variants":[true,true,true,true,true,true,true,true]},{"code":"L79","name":"花冠","note":"2026 June","variants":[true,true,true,true,true,true,true,true]}]};
+const COLORS = DATA.colors;
+const ITEMS = DATA.items;
+const dotLabelsMap = {
+  'L32': ['東','南','西','北','中','發','白', null],
+  'L33': ['一萬','一條','一筒','五萬','九萬','九條','九筒', null],
+  'L34': [null,'二萬','三萬','四萬','六萬','七萬','八萬', null],
+  'L35': [null,'二條','三條','四條','六條','七條','八條', null],
+  'L36': ['五條','五條', null,'五條', null, null, null, null],
+  'L47': ['3♣','4♣','A♣','Q♣','9♣','6♣','2♣', null],
+  'L48': ['5♣','J♣','8♣', null,'K♣','10♣','7♣', null],
+  'L49': ['A♦','2♦','3♦','4♦','6♦','7♦','5♦', null],
+  'L50': ['8♦','9♦','10♦','J♦', null,'K♦','Q♦', null],
+  'L51': [null,null,null,null,'JKR', null,null, null]
+};
+ITEMS.forEach(it => {
+  if (dotLabelsMap[it.code]) {
+    it.dotLabels = dotLabelsMap[it.code];
+    it.note = '';
+  }
+});
+const STORAGE_KEY = 'pikmin_bloom_collected_v1';
+
+let collected = {};
+try { collected = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e){ collected = {}; }
+
+const CUSTOM_KEY = 'pikmin_bloom_custom_v1';
+let customItems = [];
+try { customItems = JSON.parse(localStorage.getItem(CUSTOM_KEY) || '[]'); } catch(e){ customItems = []; }
+const saveCustom = () => localStorage.setItem(CUSTOM_KEY, JSON.stringify(customItems));
+
+const OVERRIDES_KEY = 'pikmin_bloom_overrides_v1';
+let overrides = {};
+try { overrides = JSON.parse(localStorage.getItem(OVERRIDES_KEY) || '{}'); } catch(e){ overrides = {}; }
+const saveOverrides = () => localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides));
+
+let editingCode = null;
+
+const allItems = () => {
+  const merged = ITEMS.map(it => {
+    const o = overrides[it.code];
+    return o ? {...it, ...o} : it;
+  });
+  return [...merged, ...customItems];
+};
+
+let filterColor = null;
+let expandedItems = new Set();
+let filterCat = 'all';
+let searchQ = '';
+
+const $ = id => document.getElementById(id);
+const keyFor = (code, ci) => code + '_' + ci;
+const isCollected = (code, ci) => !!collected[keyFor(code,ci)];
+const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(collected));
+
+function updateItemFrame(code){
+  const item = allItems().find(it => it.code === code);
+  if (!item) return;
+  const totalV = item.variants.filter(v => v).length;
+  const gotV = item.variants.reduce((s, v, ci) => s + (v && isCollected(item.code, ci) ? 1 : 0), 0);
+  const offset = totalV ? 100 - (gotV/totalV)*100 : 100;
+
+  const rect = document.querySelector(`rect[data-progress-for="${code}"]`);
+  if (rect) {
+    const container = rect.closest('.item, .rare-inner');
+    if (container) {
+      container.dataset.targetOffset = offset;
+      if (offset === 0) {
+        rect.style.strokeDashoffset = offset;
+        setTimeout(() => {
+          if (container.dataset.targetOffset === "0") container.classList.add('completed');
+        }, 400);
+      } else {
+        if (container.classList.contains('completed')) {
+          // Remove class to make SVG visible again
+          container.classList.remove('completed');
+          // Force browser to register the SVG at offset 0 before animating
+          rect.style.strokeDashoffset = 0;
+          rect.getBoundingClientRect(); // force reflow
+          rect.style.strokeDashoffset = offset;
+        } else {
+          rect.style.strokeDashoffset = offset;
+        }
+      }
+    } else {
+      rect.style.strokeDashoffset = offset;
+    }
+  }
+
+  const text = document.querySelector(`[data-progress-text="${code}"]`);
+  if (text) text.textContent = `${gotV}／${totalV}`;
+}
+
+function toggle(code, ci){
+  const k = keyFor(code,ci);
+  if (collected[k]) delete collected[k]; else collected[k] = 1;
+  save();
+  const dot = document.querySelector(`.v[data-code="${code}"][data-ci="${ci}"]`);
+  if (dot) {
+  dot.classList.toggle('collected');
+  if (dot.classList.contains('labeled')) {
+    const c = COLORS[ci];
+    if (dot.classList.contains('collected')) {
+      dot.style.borderColor = `var(--c-${c})`;
+      dot.style.background = `color-mix(in srgb, var(--c-${c}) 14%, var(--bg))`;
+    } else {
+      dot.style.borderColor = '';
+      dot.style.background = '';
+    }
+  }
+}
+  updateItemFrame(code);
+  renderHeader();
+}
+
+function buildFilters(){
+  const cats = [{k:'all',label:'全部'},{k:'N',label:'常駐'},{k:'L',label:'限定'}];
+  let html = '';
+  cats.forEach(c => {
+    html += `<button class="chip ${filterCat===c.k?'active':''}" data-cat="${c.k}">${c.label}</button>`;
+  });
+  html += '<span style="display:inline-block;width:1px;background:var(--line);margin:4px 8px;align-self:stretch"></span>';
+  html += `<button class="chip ${filterColor===null?'active':''}" data-color="">全色</button>`;
+  COLORS.forEach(c => {
+    html += `<button class="chip ${filterColor===c?'active':''}" data-color="${c}">${c}</button>`;
+  });
+  const f = $('filters');
+  f.innerHTML = html;
+  f.querySelectorAll('[data-cat]').forEach(b => b.onclick = () => { filterCat = b.dataset.cat; render(); });
+  f.querySelectorAll('[data-color]').forEach(b => b.onclick = () => { filterColor = b.dataset.color || null; render(); });
+}
+
+function computeStats(){
+  let total = 0, got = 0;
+  const byColor = COLORS.map(() => ({total:0, got:0}));
+  allItems().forEach(it => {
+    it.variants.forEach((ex, ci) => {
+      if (!ex) return;
+      total++; byColor[ci].total++;
+      if (isCollected(it.code, ci)) { got++; byColor[ci].got++; }
+    });
+  });
+  return {total, got, byColor};
+}
+
+function animateNumber(el, to, formatter, duration = 500){
+  const from = parseFloat(el.dataset.val || el.textContent) || 0;
+  if (from === to) { el.textContent = formatter(to); el.dataset.val = to; return; }
+  const start = performance.now();
+  function frame(now){
+    const t = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const val = from + (to - from) * eased;
+    el.textContent = formatter(val);
+    if (t < 1) requestAnimationFrame(frame);
+    else el.dataset.val = to;
+  }
+  requestAnimationFrame(frame);
+}
+
+function updateDigit(slot, newDigit, direction){
+  const stack = slot.querySelector('.digit-stack');
+  const oldEl = stack.firstElementChild;
+  if (oldEl.textContent === String(newDigit)) return;
+
+  const newEl = document.createElement('span');
+  newEl.textContent = newDigit;
+
+  stack.style.transition = 'none';
+  if (direction === 'up') {
+    stack.appendChild(newEl);
+    stack.style.transform = 'translateY(0)';
+  } else {
+    stack.insertBefore(newEl, oldEl);
+    stack.style.transform = 'translateY(-1em)';
+  }
+
+  requestAnimationFrame(() => {
+    stack.style.transition = '';
+    stack.style.transform = direction === 'up' ? 'translateY(-1em)' : 'translateY(0)';
+  });
+
+  setTimeout(() => {
+    oldEl.remove();
+    stack.style.transition = 'none';
+    stack.style.transform = 'translateY(0)';
+    void stack.offsetHeight;
+    stack.style.transition = '';
+  }, 550);
+}
+
+function updateNumberDisplay(container, newVal){
+  const oldVal = parseInt(container.dataset.val);
+  container.dataset.val = newVal;
+
+  // 第一次初始化
+  if (!container.querySelector('.digit-slot')) {
+    container.innerHTML = '';
+    for (const ch of String(newVal)) {
+      const slot = document.createElement('span');
+      slot.className = 'digit-slot';
+      slot.innerHTML = `<span class="digit-stack"><span>${ch}</span></span>`;
+      container.appendChild(slot);
+    }
+    return;
+  }
+
+  if (isNaN(oldVal) || newVal === oldVal) return;
+  const direction = newVal > oldVal ? 'up' : 'down';
+  const newStr = String(newVal);
+  const oldStr = String(oldVal);
+
+  // 位數變多，前面補位
+  while (container.children.length < newStr.length) {
+    const slot = document.createElement('span');
+    slot.className = 'digit-slot';
+    slot.innerHTML = `<span class="digit-stack"><span>0</span></span>`;
+    container.insertBefore(slot, container.firstChild);
+  }
+  // 位數變少，移除最前面
+  while (container.children.length > newStr.length) {
+    container.removeChild(container.firstChild);
+  }
+
+  const oldPadded = oldStr.padStart(newStr.length, '0');
+  for (let i = 0; i < newStr.length; i++) {
+    if (oldPadded[i] !== newStr[i]) {
+      updateDigit(container.children[i], newStr[i], direction);
+    }
+  }
+}
+
+function renderHeader(){
+  const s = computeStats();
+  const pct = s.total ? (s.got/s.total*100) : 0;
+  $('total').textContent = s.total;
+  $('bar').style.width = pct + '%';
+  updateNumberDisplay($('collected'), s.got);
+  animateNumber($('pct'), pct, v => v.toFixed(1) + '%');
+  let cs = '';
+  COLORS.forEach((c, i) => {
+    const b = s.byColor[i];
+    const p = b.total ? Math.round(b.got/b.total*100) : 0;
+    cs += `<div class="cs"><span class="dot" style="background:var(--c-${c})"></span><span class="label">${c}</span><span class="val">${b.got}／${b.total} · ${p}%</span></div>`;
+  });
+  $('colorStats').innerHTML = cs;
+}
+
+function renderList(){
+  const q = searchQ.trim().toLowerCase();
+  const rareMap = {};
+  allItems().forEach(it => {
+    if (it.code.startsWith('R')) rareMap['N' + it.code.slice(1)] = it;
+  });
+  const filtered = allItems().filter(it => {
+    if (it.code.startsWith('R')) return false;
+    if (filterCat === 'N' && !it.code.startsWith('N')) return false;
+    if (filterCat === 'L' && !it.code.startsWith('L')) return false;
+    if (q) {
+      const isJp = it.name.startsWith('運勢');
+      const match = it.name.toLowerCase().includes(q)
+        || it.code.toLowerCase().includes(q)
+        || (it.location && it.location.toLowerCase().includes(q))
+        || (isJp && '日本限定'.includes(q));
+      if (!match) return false;
+    }
+    if (filterColor !== null) {
+      const ci = COLORS.indexOf(filterColor);
+      const rare = rareMap[it.code];
+      if (!it.variants[ci] && !(rare && rare.variants[ci])) return false;
+    }
+    return true;
+  });
+
+  const groups = {N:[], L:[]};
+  filtered.forEach(it => {
+    const g = it.code.charAt(0);
+    if (groups[g]) groups[g].push(it);
+  });
+
+  const titles = {N:'常駐', L:'限定'};
+
+function renderGroup(g){
+    const list = groups[g];
+    let html = `<div class="section-title">${titles[g]} · ${list.length}</div>`;
+    html += `<button class="add-item" data-add-prefix="${g}">
+        <span class="plus">＋</span>
+        <span class="label">新增${titles[g]}系列</span>
+    </button>`;
+    if (!list.length) { html += '<div class="empty">—</div>'; return html; }
+    list.forEach(it => {
+      const totalV = it.variants.filter(v=>v).length;
+      const gotV = it.variants.reduce((s,v,ci)=>s+(v&&isCollected(it.code,ci)?1:0),0);
+      let vhtml = '';
+      const isLabeled = !!it.dotLabels;
+      it.variants.forEach((ex, ci) => {
+        const c = COLORS[ci];
+        const label = it.dotLabels?.[ci];
+        if (!ex) {
+          vhtml += `<div class="v disabled" title="${c}（無此色）"><span class="swatch"></span></div>`;
+        } else {
+          const got = isCollected(it.code, ci);
+          if (isLabeled) {
+            const styleStr = got
+              ? `style="border-color:var(--c-${c});background:color-mix(in srgb, var(--c-${c}) 14%, var(--bg))"`
+              : '';
+            vhtml += `<div class="v labeled ${got?'collected':''}" data-code="${it.code}" data-ci="${ci}" title="${c}" ${styleStr}>${label?formatDotLabel(label):''}</div>`;
+          } else {
+            vhtml += `<div class="v ${got?'collected':''}" data-code="${it.code}" data-ci="${ci}" title="${c}"><span class="swatch" style="background:var(--c-${c})"></span></div>`;
+          }
+        }
+      });
+
+      const rare = rareMap[it.code];
+      let rareHtml = '';
+      if (rare) {
+        const rTotal = rare.variants.filter(v=>v).length;
+        const rGot = rare.variants.reduce((s,v,ci)=>s+(v&&isCollected(rare.code,ci)?1:0),0);
+        let rvhtml = '';
+        rare.variants.forEach((ex, ci) => {
+          const c = COLORS[ci];
+          if (!ex) {
+            rvhtml += `<div class="v disabled"><span class="swatch"></span></div>`;
+          } else {
+            const got = isCollected(rare.code, ci);
+            rvhtml += `<div class="v ${got?'collected':''}" data-code="${rare.code}" data-ci="${ci}" title="${c}"><span class="swatch" style="background:var(--c-${c})"></span></div>`;
+          }
+        });
+        const rPct = rTotal ? (rGot/rTotal)*100 : 0;
+        const rOffset = 100 - rPct;
+        rareHtml = `<div class="rare-panel"><div class="rare-inner${rOffset===0?' completed':''}" data-target-offset="${rOffset}">
+        <svg class="progress-frame">
+            <rect x="0" y="0" width="100%" height="100%" rx="10" ry="10" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${rOffset}" data-progress-for="${rare.code}"></rect>
+        </svg>
+          <div class="rare-label"><span>稀有 · ${rare.code} · <span data-progress-text="${rare.code}">${rGot}／${rTotal}</span></span><button class="edit-item" data-edit="${rare.code}">編輯</button></div>
+          <div class="variants">${rvhtml}</div>
+        </div></div>`;
+      }
+
+      const pct = totalV ? (gotV/totalV)*100 : 0;
+      const offset = 100 - pct;
+      html += `<div class="item${expandedItems.has(it.code)?' expanded':''}${offset===0?' completed':''}" data-item-code="${it.code}" data-target-offset="${offset}">
+        <svg class="progress-frame">
+            <rect x="0" y="0" width="100%" height="100%" rx="10" ry="10" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${offset}" data-progress-for="${it.code}"></rect>
+        </svg>
+        <div class="item-head">
+          <span class="item-code">${it.code}</span>
+          <span class="item-name">${it.name}</span>
+          ${rare?`<button class="rare-toggle" data-toggle="${it.code}"><span>稀有</span><span class="arrow">▸</span></button>`:''}
+          <span class="item-progress" data-progress-text="${it.code}">${gotV}／${totalV}</span>
+          <button class="edit-item" data-edit="${it.code}">編輯</button>
+        </div>
+        ${it.name.startsWith('運勢')?`<div class="region-tag-row"><span class="region-tag">日本限定</span></div>`:''}
+        ${it.note?`<div class="item-note">${it.note}</div>`:''}
+        ${it.location?`<div class="item-location">${it.location}</div>`:''}
+        <div class="variants">${vhtml}</div>
+        ${rareHtml}
+      </div>`;
+    });
+    return html;
+  }
+
+  $('listN').innerHTML = renderGroup('N');
+  $('listL').innerHTML = renderGroup('L');
+
+  document.querySelectorAll('.v[data-code]').forEach(el => {
+    el.onclick = (e) => { e.stopPropagation(); toggle(el.dataset.code, parseInt(el.dataset.ci)); };
+  });
+  document.querySelectorAll('.rare-toggle').forEach(el => {
+    el.onclick = (e) => {
+      e.stopPropagation();
+      const code = el.dataset.toggle;
+      if (expandedItems.has(code)) expandedItems.delete(code);
+      else expandedItems.add(code);
+      const item = document.querySelector(`.item[data-item-code="${code}"]`);
+      item.classList.toggle('expanded');
+    };
+  });
+  document.querySelectorAll('.edit-item').forEach(el => {
+    el.onclick = (e) => { e.stopPropagation(); openEditFor(el.dataset.edit); };
+  });
+  document.querySelectorAll('[data-add-prefix]').forEach(el => {
+  el.onclick = () => openNewModal(el.dataset.addPrefix);
+});
+}
+
+function render(){ buildFilters(); renderHeader(); renderList(); }
+
+$('search').addEventListener('input', e => { searchQ = e.target.value; renderList(); });
+$('reset').onclick = () => {
+  if (confirm('確定要清除全部收集紀錄嗎？此動作無法復原。')) {
+    collected = {}; save(); render();
+  }
+};
+
+let newVariants = [true,true,true,true,true,true,true,true];
+
+function renderColorToggle(){
+  $('colorToggle').innerHTML = COLORS.map((c,i)=>
+    `<button type="button" class="ct ${newVariants[i]?'on':''}" data-i="${i}">
+       <span class="swatch" style="background:var(--c-${c})"></span>${c}
+     </button>`
+  ).join('');
+  $('colorToggle').querySelectorAll('.ct').forEach(b=>{
+    b.onclick = ()=>{
+      newVariants[+b.dataset.i] = !newVariants[+b.dataset.i];
+      renderColorToggle();
+    };
+  });
+}
+
+function renderCustomList(){
+  if (!customItems.length){
+    $('customList').innerHTML = '<li style="color:var(--muted);font-size:13px;border:none">尚無自訂系列</li>';
+    return;
+  }
+  $('customList').innerHTML = customItems.map((it, idx)=>
+    `<li>
+       <span class="code">${it.code}</span>
+       <span class="name">${it.name}</span>
+       <button class="del" data-idx="${idx}">刪除</button>
+     </li>`
+  ).join('');
+  $('customList').querySelectorAll('.del').forEach(b=>{
+    b.onclick = ()=>{
+      if (!confirm('確定刪除這個系列？已收集的紀錄也會失效。')) return;
+      const removed = customItems[+b.dataset.idx];
+      for (let ci = 0; ci < 8; ci++) delete collected[removed.code + '_' + ci];
+      save();
+      customItems.splice(+b.dataset.idx, 1);
+      saveCustom();
+      renderCustomList();
+      render();
+    };
+  });
+}
+
+function formatDotLabel(label){
+  if(!label) return '';
+  const isAllCn = /^[\u4e00-\u9fff]+$/.test(label);
+  if(isAllCn && label.length === 2) return `<span class="lbl-cn2">${label[0]}<br>${label[1]}</span>`;
+  if(isAllCn && label.length === 1) return `<span class="lbl-cn1">${label}</span>`;
+  return `<span class="lbl-mix">${label}</span>`;
+}
+
+function closeEditModal(){
+  $('editModal').hidden = true;
+  editingCode = null;
+  $('modalTitle').textContent = '新增系列';
+  $('codeField').style.display = '';
+  $('customSection').style.display = '';
+  $('saveNew').textContent = '新增系列';
+  $('extraActions').innerHTML = '';
+}
+
+function openEditFor(code){
+  const item = allItems().find(it => it.code === code);
+  if (!item) return;
+  editingCode = code;
+  const isCustom = customItems.some(it => it.code === code);
+  const hasOverride = !!overrides[code];
+
+  $('modalTitle').textContent = `編輯 ${code}`;
+  $('codeField').style.display = 'none';
+  $('customSection').style.display = 'none';
+  $('newName').value = item.name;
+  $('newNote').value = item.note || '';
+  $('newLocation').value = item.location || '';
+  newVariants = [...item.variants];
+  renderColorToggle();
+  $('saveNew').textContent = '儲存變更';
+
+  let extras = '';
+  if (isCustom) {
+    extras = `<button class="btn-link" id="deleteEdit" style="color:#c44">刪除這個系列</button>`;
+  } else if (hasOverride) {
+    extras = `<button class="btn-link" id="resetEdit">重設為原始</button>`;
+  }
+  $('extraActions').innerHTML = extras;
+
+  if ($('deleteEdit')) $('deleteEdit').onclick = () => {
+    if (!confirm('確定刪除這個系列？已收集的紀錄也會失效。')) return;
+    for (let ci = 0; ci < 8; ci++) delete collected[code + '_' + ci];
+    save();
+    customItems.splice(customItems.findIndex(it => it.code === code), 1);
+    saveCustom();
+    closeEditModal();
+    render();
+  };
+  if ($('resetEdit')) $('resetEdit').onclick = () => {
+    if (!confirm('確定重設為原始版本？')) return;
+    delete overrides[code];
+    saveOverrides();
+    closeEditModal();
+    render();
+  };
+
+  $('editModal').hidden = false;
+}
+
+$('openEdit').onclick = ()=>{
+  document.body.classList.toggle('edit-mode');
+};
+
+function openNewModal(prefix){
+  editingCode = null;
+  $('modalTitle').textContent = '新增系列';
+  $('codeField').style.display = '';
+  $('customSection').style.display = '';
+  $('newName').value = '';
+  $('newNote').value = '';
+  $('newLocation').value = '';
+  $('newNum').value = '';
+  $('saveNew').textContent = '新增系列';
+  $('extraActions').innerHTML = '';
+  newVariants = [true,true,true,true,true,true,true,true];
+  renderColorToggle();
+  renderCustomList();
+  // 預選類型
+  if (prefix) {
+    newPrefix = prefix;
+    $('prefixGroup').querySelectorAll('.pfx').forEach(x => x.classList.toggle('active', x.dataset.pfx === prefix));
+  }
+  $('editModal').hidden = false;
+}
+
+$('closeEdit').onclick = closeEditModal;
+$('editModal').onclick = (e)=>{ if (e.target.id === 'editModal') closeEditModal(); };
+
+let newPrefix = 'N';
+
+function bindPrefixGroup(){
+  $('prefixGroup').querySelectorAll('.pfx').forEach(b => {
+    b.onclick = () => {
+      newPrefix = b.dataset.pfx;
+      $('prefixGroup').querySelectorAll('.pfx').forEach(x => x.classList.toggle('active', x===b));
+    };
+  });
+}
+bindPrefixGroup();
+
+$('saveNew').onclick = ()=>{
+  const name = $('newName').value.trim();
+  if (!name) { alert('名稱必填'); return; }
+  if (!newVariants.some(v=>v)) { alert('至少要保留一個顏色'); return; }
+  const note = $('newNote').value.trim();
+  const location = $('newLocation').value.trim();
+
+  if (editingCode) {
+    const isCustom = customItems.some(it => it.code === editingCode);
+    if (isCustom) {
+      const idx = customItems.findIndex(it => it.code === editingCode);
+      customItems[idx] = {code: editingCode, name, note, location, variants: [...newVariants]};
+      saveCustom();
+    } else {
+      overrides[editingCode] = {name, note, location, variants: [...newVariants]};
+      saveOverrides();
+    }
+    closeEditModal();
+    render();
+    return;
+  }
+
+  const numRaw = $('newNum').value.trim();
+  if (!numRaw) { alert('編號必填'); return; }
+  const num = parseInt(numRaw, 10);
+  if (!num || num < 1) { alert('編號必須是正整數'); return; }
+  const code = newPrefix + String(num).padStart(2, '0');
+  if (allItems().some(it=>it.code===code)) { alert('編號 ' + code + ' 已存在'); return; }
+  if (newPrefix === 'R') {
+    const pairedN = 'N' + String(num).padStart(2, '0');
+    if (!allItems().some(it=>it.code===pairedN)) {
+      alert(`找不到對應的常駐系列 ${pairedN}，請先建立 ${pairedN}`);
+      return;
+    }
+  }
+  customItems.push({code, name, note, location, variants:[...newVariants]});
+  saveCustom();
+  $('newNum').value = ''; $('newName').value = ''; $('newNote').value = ''; $('newLocation').value = '';
+  newVariants = [true,true,true,true,true,true,true,true];
+  renderColorToggle();
+  renderCustomList();
+  render();
+};
+
+$('exportData').onclick = () => {
+  const payload = {
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    collected,
+    customItems,
+    overrides
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  a.href = url;
+  a.download = `${yyyy}${mm}${dd}_export.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+$('importData').onclick = () => $('importFile').click();
+
+$('importFile').onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.collected || !Array.isArray(data.customItems)) {
+        alert('檔案格式不正確'); return;
+      }
+      const msg = `即將匯入・\n・收集紀錄 ${Object.keys(data.collected).length} 筆\n・自訂系列 ${data.customItems.length} 個\n・修改 ${Object.keys(data.overrides || {}).length} 筆\n\n會覆蓋目前的紀錄，確定繼續？`;
+      if (!confirm(msg)) return;
+      collected = data.collected;
+      customItems = data.customItems;
+      overrides = data.overrides || {};
+      save();
+      saveCustom();
+      saveOverrides();
+      render();
+      alert('匯入完成');
+    } catch (err) {
+      alert('讀取失敗：' + err.message);
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+};
+
+function escapeCsv(str) {
+  if (str === null || str === undefined) return '';
+  const s = String(str);
+  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+$('exportCsv').onclick = async () => {
+  if (typeof ExcelJS === 'undefined') {
+    alert('Excel 匯出模組尚未載入，請稍後再試。');
+    return;
+  }
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet('Pikmin');
+  
+  sheet.addRow(['', '', '備註', '地點', '1R', '2Y', '3B', '4W', '5Pu', '6G', '7Pi', '8Cy']);
+  sheet.addRow(['', '', '', '', '紅', '黃', '藍', '白', '紫', '岩', '粉', '冰']);
+  
+  allItems().forEach(it => {
+    const rowValues = [it.code, it.name, it.note || '', it.location || ''];
+    it.variants.forEach((ex, ci) => {
+      if (!ex) {
+        rowValues.push('');
+      } else {
+        rowValues.push(COLORS[ci] + '-' + it.name);
+      }
+    });
+    const row = sheet.addRow(rowValues);
+    
+    it.variants.forEach((ex, ci) => {
+      if (ex && isCollected(it.code, ci)) {
+        const cell = row.getCell(5 + ci);
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFF6C961' }
+        };
+      }
+    });
+  });
+  
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  a.href = url;
+  a.download = `${yyyy}${mm}${dd}_export.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+$('importCsv').onclick = () => $('importCsvFile').click();
+
+$('importCsvFile').onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  try {
+    const newCollected = {};
+    const newCustomItems = [];
+    const newOverrides = {};
+    
+    if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+      if (typeof ExcelJS === 'undefined') {
+        alert('Excel 模組尚未載入，請稍後再試。');
+        e.target.value = '';
+        return;
+      }
+      const buffer = await file.arrayBuffer();
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+      const sheet = workbook.worksheets[0];
+      
+      if (sheet.rowCount === 0) throw new Error('檔案為空');
+      
+      sheet.eachRow((row, rowNumber) => {
+        if (rowNumber <= 2) return;
+        
+        const code = row.getCell(1).text?.trim();
+        const name = row.getCell(2).text?.trim();
+        const note = row.getCell(3).text?.trim() || '';
+        const location = row.getCell(4).text?.trim() || '';
+        
+        if (!code || !name) return;
+        
+        const variants = [];
+        for (let c = 0; c < 8; c++) {
+          const cell = row.getCell(5 + c);
+          const v = cell.text?.trim() || '';
+          
+          if (!v) {
+            variants.push(false);
+          } else {
+            variants.push(true);
+            
+            let isCol = false;
+            if (cell.fill && cell.fill.fgColor && cell.fill.fgColor.argb) {
+              const argb = cell.fill.fgColor.argb.toUpperCase();
+              if (argb.includes('F6C961') || argb.includes('FFC000')) isCol = true;
+            }
+            const lowerV = v.toLowerCase();
+            if (v.includes('✓') || lowerV.includes('v ') || lowerV.includes('(o)') || v.includes('1') || lowerV === 'true' || lowerV === 'yes' || v === '是') {
+              isCol = true;
+            }
+            
+            if (isCol) newCollected[code + '_' + c] = 1;
+          }
+        }
+        
+        const defaultIt = ITEMS.find(it => it.code === code);
+        if (!defaultIt) {
+          newCustomItems.push({code, name, note, location, variants});
+        } else {
+          const isNameDiff = name !== defaultIt.name;
+          const isNoteDiff = note !== (defaultIt.note || '');
+          const isLocDiff = location !== (defaultIt.location || '');
+          let isVarDiff = false;
+          for (let c = 0; c < 8; c++) if (variants[c] !== defaultIt.variants[c]) isVarDiff = true;
+          
+          if (isNameDiff || isNoteDiff || isLocDiff || isVarDiff) {
+            newOverrides[code] = {name, note, location, variants};
+          }
+        }
+      });
+    } else {
+      // Fallback CSV parse
+      const text = await file.text();
+      const lines = text.split(/\r?\n/);
+      if (lines.length === 0) throw new Error('檔案為空');
+      
+      for (let i = 2; i < lines.length; i++) {
+        let line = lines[i].trim();
+        if (!line) continue;
+        
+        const row = [];
+        let inQuotes = false;
+        let val = '';
+        for (let j = 0; j < line.length; j++) {
+          let c = line[j];
+          if (inQuotes && c === '"' && line[j+1] === '"') {
+            val += '"'; j++;
+          } else if (c === '"') {
+            inQuotes = !inQuotes;
+          } else if (c === ',' && !inQuotes) {
+            row.push(val); val = '';
+          } else {
+            val += c;
+          }
+        }
+        row.push(val);
+        
+        if (row.length < 4) continue;
+        
+        const code = row[0];
+        const name = row[1];
+        const note = row[2] || '';
+        const location = row[3] || '';
+        const variants = [];
+        for (let c = 0; c < 8; c++) {
+          const v = row[4 + c];
+          if (v === '' || v === undefined) {
+            variants.push(false);
+          } else {
+            variants.push(true);
+            const lowerV = v.toLowerCase();
+            if (v.includes('✓') || lowerV.includes('v ') || lowerV.includes('(o)') || v.includes('1') || lowerV === 'true' || lowerV === 'yes' || v === '是') {
+              newCollected[code + '_' + c] = 1;
+            }
+          }
+        }
+        
+        const defaultIt = ITEMS.find(it => it.code === code);
+        if (!defaultIt) {
+          newCustomItems.push({code, name, note, location, variants});
+        } else {
+          const isNameDiff = name !== defaultIt.name;
+          const isNoteDiff = note !== (defaultIt.note || '');
+          const isLocDiff = location !== (defaultIt.location || '');
+          let isVarDiff = false;
+          for (let c = 0; c < 8; c++) if (variants[c] !== defaultIt.variants[c]) isVarDiff = true;
+          
+          if (isNameDiff || isNoteDiff || isLocDiff || isVarDiff) {
+            newOverrides[code] = {name, note, location, variants};
+          }
+        }
+      }
+    }
+    
+    const formatName = file.name.endsWith('.csv') ? 'CSV' : 'Excel';
+    const msg = `即將匯入 ${formatName}：\n・收集紀錄 ${Object.keys(newCollected).length} 筆\n・自訂系列 ${newCustomItems.length} 個\n・修改 ${Object.keys(newOverrides).length} 筆\n\n會覆蓋目前的紀錄，確定繼續？`;
+    if (!confirm(msg)) {
+      e.target.value = '';
+      return;
+    }
+    
+    collected = newCollected;
+    customItems = newCustomItems;
+    overrides = newOverrides;
+    save();
+    saveCustom();
+    saveOverrides();
+    render();
+    alert(`${formatName} 匯入完成`);
+  } catch (err) {
+    alert('讀取失敗：' + err.message);
+  }
+  e.target.value = '';
+};
+
+$('openHelp').onclick = () => { $('helpModal').hidden = false; };
+$('closeHelp').onclick = () => { $('helpModal').hidden = true; };
+$('helpModal').onclick = (e) => { if (e.target.id === 'helpModal') $('helpModal').hidden = true; };
+
+$('menuFab').onclick = (e) => {
+  e.stopPropagation();
+  const popup = $('menuPopup');
+  popup.hidden = !popup.hidden;
+  $('menuFab').classList.toggle('open', !popup.hidden);
+};
+document.addEventListener('click', (e) => {
+  const popup = $('menuPopup');
+  if (!popup.hidden && !popup.contains(e.target) && !$('menuFab').contains(e.target)) {
+    popup.hidden = true;
+    $('menuFab').classList.remove('open');
+  }
+});
+render();
+</script>
+</body>
+</html>
