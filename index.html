@@ -21,8 +21,10 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{background:var(--bg);color:var(--ink)}
 body{
-  font-family:"Songti TC","Songti SC","STSong","Source Han Serif TC","Noto Serif TC",
-    "PMingLiU","MingLiU",ui-serif,serif;
+  font-family:"Songti TC","STSongti-TC-Regular","Songti SC","STSong",
+    "Source Han Serif TC","Noto Serif TC","PMingLiU","MingLiU",ui-serif,serif;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
   font-weight:400;line-height:1.55;padding-bottom:80px;
   letter-spacing:.01em;
   min-height:100vh;
@@ -280,6 +282,28 @@ body:has(.modal:not([hidden])){overflow:hidden}
 .v.labeled .lbl-cn1{font-size:14px;font-family:"Songti TC","Source Han Serif TC",serif;line-height:1}
 .v.labeled .lbl-cn2{font-size:10px;font-family:"Songti TC","Source Han Serif TC",serif;line-height:1.05;text-align:center}
 .v.labeled .lbl-mix{font-size:11px;font-family:"Source Serif Pro",Georgia,serif;line-height:1;letter-spacing:.02em}
+@media (max-width:680px){
+  .wrap{padding:0 20px}
+  header{padding:20px 0 12px}
+  h1{font-size:22px;letter-spacing:.06em}
+  .header-top{flex-wrap:wrap;gap:12px;margin-bottom:16px}
+  .header-top h1{margin-bottom:0}
+  .header-top .search{flex:1 1 100%;order:3}
+  .header-top .search input{width:100%}
+  .overall .num{font-size:24px}
+  .overall .pct{font-size:13px}
+  .color-stats{grid-template-columns:repeat(2,1fr);gap:8px 14px}
+  .controls{padding:6px 0 12px}
+  .filters{padding:8px 0 6px}
+  .chip{font-size:12px;padding:4px 10px}
+  .item{padding:12px 14px}
+  .item-name{font-size:15px}
+  .modal-inner{padding:20px 16px 28px}
+  #helpModal{padding-top:60px}
+  #helpModal .modal-inner{max-height:calc(100vh - 80px)}
+  #editModal{padding-top:60px}
+  #editModal .modal-inner{max-height:calc(100vh - 80px)}
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 </head>
