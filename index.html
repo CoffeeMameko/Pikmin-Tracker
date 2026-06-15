@@ -54,8 +54,23 @@ h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:
   transform-origin:left;
   transition:transform .5s cubic-bezier(.4,0,.2,1);
   border-radius:2px;
+  will-change:transform;
 }
-.color-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 18px;margin-top:22px}
+.color-stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px 18px;
+  margin-top:22px;
+  max-height:200px;
+  overflow:hidden;
+  transition:max-height .35s ease, opacity .35s ease, margin-top .35s ease;
+}
+.controls.scrolled .color-stats{
+  max-height:0;
+  opacity:0;
+  margin-top:0;
+  pointer-events:none;
+}
 .cs{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-soft);font-feature-settings:"tnum"}
 .cs .dot{width:8px;height:8px;border-radius:50%}
 .cs .label{color:var(--ink)}
@@ -79,6 +94,7 @@ h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:
 }
 .controls .wrap{
   transition:background .5s ease, border-radius .5s ease, box-shadow .5s ease, padding .5s ease;
+  will-change:background-color, border-radius, box-shadow;
 }
 .controls.scrolled .wrap{
   background:rgba(255,255,255,.55);
@@ -86,6 +102,7 @@ h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:
   padding:16px 28px;
   box-shadow:0 4px 28px rgba(0,0,0,.06);
 }
+
 :root.dark .controls.scrolled{
   background:rgba(28,33,41,.7);
 }
