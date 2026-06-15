@@ -372,6 +372,10 @@ body:has(.modal:not([hidden])){overflow:hidden}
 :root.dark .menu-popup .btn-link:hover{background:rgba(255,255,255,.06)}
 :root.dark .v.labeled{color:#5a6172}
 :root.dark .region-tag{background:#a83838}
+
+.theme-transitioning *{
+  transition:background-color .4s ease, border-color .4s ease, color .4s ease !important;
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 </head>
@@ -1450,7 +1454,11 @@ const applyDark = (on) => {
 applyDark(localStorage.getItem(DARK_KEY) === '1');
 
 $('toggleDark').onclick = () => {
+  document.documentElement.classList.add('theme-transitioning');
   applyDark(!document.documentElement.classList.contains('dark'));
+  setTimeout(() => {
+    document.documentElement.classList.remove('theme-transitioning');
+  }, 200);
 };
 
 const controlsEl = document.querySelector('.controls');
