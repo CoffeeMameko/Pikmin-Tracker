@@ -53,7 +53,37 @@ h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:
 .cs .label{color:var(--ink)}
 .cs .val{margin-left:auto;color:var(--muted)}
 
-.controls{padding:8px 0 16px;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);position:-webkit-sticky;position:sticky;top:0;background:var(--bg);z-index:99;-webkit-transform:translate3d(0,0,10px);transform:translate3d(0,0,10px)}
+.controls{
+  padding:8px 0 16px;
+  position:sticky;top:0;
+  background:var(--bg);
+  z-index:99;
+  transform:translate3d(0,0,10px);
+  transition:padding .4s ease, background .4s ease, backdrop-filter .5s ease;
+}
+.controls.scrolled{
+  background:rgba(250,250,247,.7);
+  backdrop-filter:blur(24px) saturate(1.2);
+  -webkit-backdrop-filter:blur(24px) saturate(1.2);
+  padding:10px 16px;
+}
+.controls .wrap{
+  transition:background .5s ease, border-radius .5s ease, box-shadow .5s ease, padding .5s ease;
+}
+.controls.scrolled .wrap{
+  background:rgba(255,255,255,.55);
+  border-radius:16px;
+  padding:16px 28px;
+  box-shadow:0 4px 28px rgba(0,0,0,.06);
+}
+:root.dark .controls.scrolled{
+  background:rgba(28,33,41,.7);
+}
+:root.dark .controls.scrolled .wrap{
+  background:rgba(255,255,255,.05);
+  box-shadow:0 4px 28px rgba(0,0,0,.3);
+}
+
 .filters{display:flex;gap:4px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;padding:12px 0 10px;margin:0 -20px;padding-left:20px;padding-right:20px}
 .filters::-webkit-scrollbar{display:none}
 .chip{padding:5px 12px;border-radius:0;border:none;background:transparent;
@@ -184,7 +214,7 @@ body.edit-mode #openEdit{color:var(--ink);font-weight:600}
 .help-section li{font-size:13px;color:var(--ink-soft);margin-bottom:6px;line-height:1.7;padding-left:14px;position:relative}
 .help-section li::before{content:"・";color:var(--muted);position:absolute;left:0}
 .help-section kbd{font-family:inherit;background:rgba(42,53,69,.08);padding:1px 6px;border-radius:3px;font-size:12px}
-.header-tools{display:flex;align-items:center;gap:16px}
+.header-tools{display:flex;align-items:center;gap:2px}
 #helpModal{
   align-items:flex-start;
   padding-top:120px;
@@ -305,6 +335,43 @@ body:has(.modal:not([hidden])){overflow:hidden}
   #editModal{padding-top:60px}
   #editModal .modal-inner{max-height:calc(100vh - 80px)}
 }
+.icon-btn{
+  background:none;border:none;cursor:pointer;
+  color:var(--muted);
+  display:flex;align-items:center;justify-content:center;
+  padding:6px;border-radius:6px;
+  transition:color .15s, background .15s;
+  position:relative;
+}
+.icon-btn:hover{color:var(--ink);background:rgba(42,53,69,.05)}
+.icon-btn svg{display:block}
+
+#toggleDark{position:relative;width:32px;height:32px}
+#toggleDark svg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(1);transition:opacity .2s, transform .2s}
+#toggleDark .icon-moon{opacity:0;transform:translate(-50%,-50%) scale(.7)}
+:root.dark #toggleDark .icon-sun{opacity:0;transform:translate(-50%,-50%) scale(.7)}
+:root.dark #toggleDark .icon-moon{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+/* === 深色模式 === */
+:root.dark{
+  --ink:#ebe9e2;
+  --ink-soft:#b8bcc6;
+  --muted:#7a8090;
+  --bg:#1c2129;
+  --card:#262c36;
+  --line:#3a4150;
+  --line-soft:#2a303a;
+}
+:root.dark .menu-fab{background:var(--ink);color:var(--bg)}
+:root.dark .btn-primary{background:var(--ink);color:var(--bg)}
+:root.dark .pfx.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+:root.dark .icon-btn:hover{background:rgba(255,255,255,.06)}
+:root.dark .modal{background:rgba(0,0,0,.4)}
+:root.dark .rare-inner{background:rgba(255,255,255,.04)}
+:root.dark .help-section kbd{background:rgba(255,255,255,.08)}
+:root.dark .menu-popup .btn-link:hover{background:rgba(255,255,255,.06)}
+:root.dark .v.labeled{color:#5a6172}
+:root.dark .region-tag{background:#a83838}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 </head>
@@ -320,7 +387,26 @@ body:has(.modal:not([hidden])){overflow:hidden}
       </svg>
       <input type="text" id="search" placeholder="搜尋名稱、編號或地點">
     </div>
-      <button class="btn-link" id="openHelp">說明</button>
+    <div class="header-tools">
+      <button class="icon-btn" id="openHelp" aria-label="說明">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="toggleDark" aria-label="切換深淺模式">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+          <circle cx="12" cy="12" r="4"/>
+          <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
+          <line x1="4.93" y1="4.93" x2="7.05" y2="7.05"/><line x1="16.95" y1="16.95" x2="19.07" y2="19.07"/>
+          <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+          <line x1="4.93" y1="19.07" x2="7.05" y2="16.95"/><line x1="16.95" y1="7.05" x2="19.07" y2="4.93"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
     </div>
   </div>
 </header>
@@ -1355,6 +1441,27 @@ document.addEventListener('click', (e) => {
     $('menuFab').classList.remove('open');
   }
 });
+
+const DARK_KEY = 'pikmin_dark_v1';
+const applyDark = (on) => {
+  document.documentElement.classList.toggle('dark', on);
+  localStorage.setItem(DARK_KEY, on ? '1' : '0');
+};
+applyDark(localStorage.getItem(DARK_KEY) === '1');
+
+$('toggleDark').onclick = () => {
+  applyDark(!document.documentElement.classList.contains('dark'));
+};
+
+const controlsEl = document.querySelector('.controls');
+let lastScrolled = false;
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY > 80;
+  if (scrolled !== lastScrolled) {
+    controlsEl.classList.toggle('scrolled', scrolled);
+    lastScrolled = scrolled;
+  }
+}, {passive: true});
 render();
 </script>
 </body>
