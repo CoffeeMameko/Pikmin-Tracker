@@ -58,7 +58,8 @@ h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:
 }
 .color-stats{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(4,max-content);
+  justify-content:space-between;
   gap:10px 18px;
   margin-top:22px;
   max-height:200px;
@@ -74,7 +75,7 @@ h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:
 .cs{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-soft);font-feature-settings:"tnum"}
 .cs .dot{width:8px;height:8px;border-radius:50%}
 .cs .label{color:var(--ink)}
-.cs .val{margin-left:auto;color:var(--muted)}
+.cs .val{color:var(--muted)}
 
 .controls{
   padding:8px 0 16px;
@@ -355,7 +356,7 @@ body:has(.modal:not([hidden])){overflow:hidden}
   .header-top .search input{width:100%}
   .overall .num{font-size:24px}
   .overall .pct{font-size:13px}
-  .color-stats{grid-template-columns:repeat(2,1fr);gap:8px 14px}
+  .color-stats{grid-template-columns:repeat(2,max-content);justify-content:space-between;gap:8px 14px}
   .controls{padding:6px 0 12px}
   .filters{padding:8px 0 6px}
   .chip{font-size:12px;padding:4px 10px}
