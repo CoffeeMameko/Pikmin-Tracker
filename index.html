@@ -1623,7 +1623,7 @@ function renderGroup(g){
 });
 }
 
-function render(){ buildFilters(); renderHeader(); renderList(); }
+function render(){ buildFilters(); renderHeader(); renderList(); applyLang(); }
 
 $('search').addEventListener('input', e => { 
   searchQ = e.target.value; 
