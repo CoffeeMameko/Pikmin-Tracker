@@ -20,6 +20,11 @@
   --c-白:#f0eee8; --c-紫:#9a73c4; --c-岩:#9aa0a8;
   --c-粉:#e3a6c4; --c-冰:#a7d3df;
   --rare:#f6c961;
+  --glow-norm: rgba(42, 53, 69, 0.6);
+  --glow-norm-dim: rgba(42, 53, 69, 0.15);
+  --glow-rare: rgba(246, 201, 97, 0.9);
+  --glow-rare-dim: rgba(246, 201, 97, 0.4);
+  --frame-norm: var(--ink-soft);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{background:var(--bg);color:var(--ink)}
@@ -33,11 +38,11 @@ body{
 }
 .wrap{max-width:1080px;margin:0 auto;padding:0 32px}
 header{padding:32px 0 20px}
-h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:var(--ink)}
-.header-top{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:28px}
+h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:var(--ink);white-space:nowrap;flex-shrink:0}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:28px;flex-wrap:nowrap}
 .header-top h1{margin-bottom:0}
-.header-top .search{flex:0 0 auto}
-.header-top .search input{width:240px}
+.header-top .search{flex:0 0 240px;min-width:240px}
+.header-top .search input{width:100%}
 .overall{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
 .overall .num{font-size:32px;font-weight:400;color:var(--ink);letter-spacing:.02em}
 .digit-slot{display:inline-block;overflow:hidden;height:1em;line-height:1em;vertical-align:baseline}
@@ -45,17 +50,33 @@ h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:
 .digit-stack > span{display:block;line-height:1em;height:1em;font-variant-numeric:tabular-nums}
 .overall .total{color:var(--muted);font-size:15px}
 .overall .pct{margin-left:auto;font-size:14px;color:var(--ink-soft);font-feature-settings:"tnum"}
-.bar{height:3px;background:var(--line);border-radius:2px;overflow:hidden}
-.bar-fill{
+.bar{height:4px;background:var(--line);border-radius:2px;display:flex}
+.bar-segment{
   height:100%;
-  background:var(--ink);
-  width:100%;
-  transform:scaleX(0);
-  transform-origin:left;
-  transition:transform .5s cubic-bezier(.4,0,.2,1);
-  border-radius:2px;
-  will-change:transform;
+  transition:width 1.5s cubic-bezier(.16,1,.3,1), border-right-width 1.5s;
+  width:0%;
+  box-sizing:border-box;
+  border-right:0px solid var(--bg);
+  position:relative;
 }
+.bar-segment:first-child { border-top-left-radius: 2px; border-bottom-left-radius: 2px; }
+.bar-segment:last-child { border-top-right-radius: 2px; border-bottom-right-radius: 2px; }
+.bar-segment::before {
+  content: '';
+  position: absolute;
+  top: -12px; bottom: -12px; left: 0; right: 0;
+  z-index: 1;
+}
+.bar-segment::after {
+  content: attr(data-color);
+  position: absolute;
+  bottom: 12px; left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: var(--bg);
+  padding: 2px 6px; border-radius: 4px; font-size: 11px;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  white-space: nowrap; z-index: 2;
+}
+.bar-segment:hover::after { opacity: 1; }
 .color-stats{
   display:grid;
   grid-template-columns:repeat(4,max-content);
@@ -126,7 +147,11 @@ h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:
   font-size:14px;font-family:inherit;background:transparent;color:var(--ink)}
 .search input:focus{outline:none}
 .search input::placeholder{color:var(--muted)}
-.search input::placeholder{color:var(--muted)}
+.search-clear{background:none;border:none;padding:4px;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.search-clear:hover{color:var(--ink)}
+.sort-btn{color:var(--muted);transition:color .15s}
+.sort-btn:hover{color:var(--ink)}
+.sort-btn.desc svg{transform:scaleY(-1)}
 
 .columns{display:grid;grid-template-columns:1fr 1fr;gap:0 48px;padding:8px 0}
 .column{min-width:0}
@@ -151,8 +176,21 @@ h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:
 .v .swatch{width:14px;height:14px;border-radius:50%;transition:all .2s}
 .v.disabled{opacity:.3;cursor:not-allowed}
 .v.disabled .swatch{background:transparent !important;border:1px dashed var(--line)}
+.v.dimmed{opacity:0.15;filter:grayscale(1)}
+.v.dimmed.labeled{opacity:0.25}
 .v.collected{border-color:var(--ink)}
 .v.collected .swatch{width:20px;height:20px}
+.v::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%; left: 50%; transform: translate(-50%, -4px);
+  background: var(--ink); color: var(--bg);
+  padding: 3px 6px; border-radius: 4px; font-size: 11px;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s;
+  white-space: nowrap; z-index: 10;
+}
+.v:hover::after { opacity: 1; transform: translate(-50%, -8px); }
+.v:not([data-tooltip])::after { display: none; }
 
 .tip{font-size:12px;color:var(--muted);letter-spacing:.02em}
 .btn-link{background:none;border:none;font-family:inherit;font-size:12px;
@@ -234,10 +272,75 @@ body.edit-mode #openEdit{color:var(--ink);font-weight:600}
 .add-item .plus{font-size:18px;min-width:32px;font-weight:300}
 .add-item .label{font-size:14px}
 .progress-frame{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1;overflow:visible;transform:translateZ(0)}
-.progress-frame rect{fill:none;stroke:var(--ink);stroke-width:2;
+.progress-frame rect{fill:none;stroke:var(--frame-norm);stroke-width:2;
   transition:stroke-dashoffset .4s ease}
-  .rare-inner .progress-frame rect{stroke:var(--rare)}
+.rare-inner .progress-frame rect{stroke:var(--rare)}
 .rare-inner{position:relative}
+@keyframes breatheWhite {
+  0%, 100% { filter: drop-shadow(0 0 4px var(--glow-norm-dim)); }
+  50% { filter: drop-shadow(0 0 14px var(--glow-norm)); }
+}
+@keyframes breatheGold {
+  0%, 100% { filter: drop-shadow(0 0 4px var(--glow-rare-dim)); }
+  50% { filter: drop-shadow(0 0 14px var(--glow-rare)); }
+}
+@keyframes breatheWhiteStroke {
+  0%, 100% { stroke: var(--frame-norm); }
+  50% { stroke: var(--ink); }
+}
+@keyframes breatheGoldStroke {
+  0%, 100% { stroke: var(--rare); }
+  50% { stroke: #ffe680; }
+}
+.item.completed > .progress-frame {
+  animation: breatheWhite 3s infinite ease-in-out;
+  animation-delay: var(--sync-delay, 0ms);
+}
+.item.completed > .progress-frame rect {
+  animation: breatheWhiteStroke 3s infinite ease-in-out;
+  animation-delay: var(--sync-delay, 0ms);
+}
+.rare-inner.completed > .progress-frame {
+  animation: breatheGold 3s infinite ease-in-out;
+  animation-delay: var(--sync-delay, 0ms);
+}
+.rare-inner.completed > .progress-frame rect {
+  animation: breatheGoldStroke 3s infinite ease-in-out;
+  animation-delay: var(--sync-delay, 0ms);
+}
+
+.item.completed.completed-new > .progress-frame {
+  filter: drop-shadow(0 0 14px var(--glow-norm)) !important;
+  animation: none !important;
+  transition: filter 1.5s ease-out;
+}
+.item.completed.completed-new > .progress-frame rect {
+  stroke: var(--ink) !important;
+  animation: none !important;
+  transition: stroke 1.5s ease-out;
+}
+.rare-inner.completed.completed-new > .progress-frame {
+  filter: drop-shadow(0 0 14px var(--glow-rare)) !important;
+  animation: none !important;
+  transition: filter 1.5s ease-out;
+}
+.rare-inner.completed.completed-new > .progress-frame rect {
+  stroke: #ffe680 !important;
+  animation: none !important;
+  transition: stroke 1.5s ease-out;
+}
+.particle {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  animation: explode 2.5s cubic-bezier(0.2, 1, 0.4, 1) forwards;
+  z-index: 10;
+}
+@keyframes explode {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
+}
+
 .region-tag-row{display:flex;justify-content:flex-end;margin:-4px 0 8px 0}
 .region-tag{display:inline-block;padding:3px 10px;background:#8b2929;color:#fff;
   border-radius:6px;font-size:10px;letter-spacing:.15em}
@@ -394,6 +497,11 @@ body:has(.modal:not([hidden])){overflow:hidden}
   --card:#262c36;
   --line:#3a4150;
   --line-soft:#2a303a;
+  --glow-norm: rgba(255, 255, 255, 0.7);
+  --glow-norm-dim: rgba(255, 255, 255, 0.2);
+  --glow-rare: rgba(255, 223, 112, 1);
+  --glow-rare-dim: rgba(255, 223, 112, 0.3);
+  --frame-norm: var(--muted);
 }
 :root.dark .menu-fab{background:var(--ink);color:var(--bg)}
 :root.dark .btn-primary{background:var(--ink);color:var(--bg)}
@@ -428,6 +536,9 @@ body:has(.modal:not([hidden])){overflow:hidden}
         <line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
       <input type="text" id="search" placeholder="搜尋名稱、編號或地點">
+      <button id="clearSearch" class="search-clear" style="display:none" aria-label="清除搜尋">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
     </div>
     <div class="header-tools">
       <button class="icon-btn" id="openHelp" aria-label="說明">
@@ -449,6 +560,16 @@ body:has(.modal:not([hidden])){overflow:hidden}
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
       </button>
+      <button class="icon-btn" id="toggleLang" aria-label="切換語言" title="切換中/日文">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+          <path d="m5 8 6 6"/>
+          <path d="m4 14 6-6 2-3"/>
+          <path d="M2 5h12"/>
+          <path d="M7 2h1"/>
+          <path d="m22 22-5-10-5 10"/>
+          <path d="M14 18h6"/>
+        </svg>
+      </button>
     </div>
   </div>
 </header>
@@ -461,8 +582,7 @@ body:has(.modal:not([hidden])){overflow:hidden}
       <span class="total">／ <span id="total">0</span></span>
       <span class="pct" id="pct">0.0%</span>
     </div>
-    <div class="bar"><div class="bar-fill" id="bar"></div></div>
-    <div class="color-stats" id="colorStats"></div>
+    <div class="bar" id="bar"></div>
     <div class="filters" id="filters"></div>
   </div>
 </div>
@@ -497,6 +617,10 @@ body:has(.modal:not([hidden])){overflow:hidden}
       <input id="newName" placeholder="例：夏日扇子">
     </div>
     <div class="field">
+      <label>日文名稱(選填)</label>
+      <input id="newNameJa" placeholder="例：夏の扇子">
+    </div>
+    <div class="field">
       <label>備註(可留空)</label>
       <input id="newNote" placeholder="例：2026 June">
     </div>
@@ -526,11 +650,11 @@ body:has(.modal:not([hidden])){overflow:hidden}
     </div>
 
     <div class="help-section">
-      <h3>編輯收集狀態</h3>
+      <h3>編輯收集狀態與統計</h3>
       <ul>
-        <li>點擊任何色點即可切換該顏色的收集狀態</li>
-        <li>項目周圍的描邊框會依收集比例順時針環繞，全部收完就形成完整框線</li>
-        <li>頂部總進度條、百分比、八色分項統計會即時跟著更新</li>
+        <li>點擊任何色點即可切換該顏色的收集狀態，游標懸浮可查看該顏色的專屬字卡</li>
+        <li>項目周圍的描邊框會依收集進度環繞，100% 收集滿時會出現發光的呼吸燈效果（常駐為白光，稀有為金光）</li>
+        <li>頂部進度條會即時更新，點擊各顏色區段可篩選對應顏色的皮克敏</li>
       </ul>
     </div>
 
@@ -544,11 +668,22 @@ body:has(.modal:not([hidden])){overflow:hidden}
     </div>
 
     <div class="help-section">
-      <h3>篩選與搜尋</h3>
+      <h3>篩選、排序與搜尋</h3>
       <ul>
-        <li>頂部三個分頁可切換 全部／常駐／限定</li>
-        <li>色彩標籤讓你只看擁有某種顏色的項目</li>
-        <li>搜尋框可用編號(如 <kbd>N01</kbd>)或名稱(如 <kbd>廚師帽</kbd>)即時過濾</li>
+        <li>頂部分類按鈕可切換 全部／常駐／限定，並可搭配「已收集/未收集」標籤使用</li>
+        <li>直接點擊「頂部進度條上的各顏色區段」即可篩選出該顏色的項目</li>
+        <li>在清單的「常駐」與「限定」標題左側，有獨立的排序按鈕可各自切換升降冪</li>
+        <li>搜尋框支援注音鍵盤對應(如 <kbd>vu0</kbd> = 皮)，沒切換輸入法也能搜</li>
+        <li>在搜尋框按右側 ✕ 或 <kbd>Esc</kbd> 可快速清除內容</li>
+      </ul>
+    </div>
+
+    <div class="help-section">
+      <h3>介面與語言切換</h3>
+      <ul>
+        <li>點擊右上角月亮/太陽圖示切換深淺模式</li>
+        <li>點擊「文A」圖示可切換中文/日文顯示</li>
+        <li>所有彈出視窗（如編輯、新增、說明）皆可按 <kbd>Esc</kbd> 快速關閉</li>
       </ul>
     </div>
 
@@ -565,7 +700,8 @@ body:has(.modal:not([hidden])){overflow:hidden}
       <h3>編輯既有系列</h3>
       <ul>
         <li>按底部「編輯」進入編輯模式，所有項目右側會出現編輯連結</li>
-        <li>可修改名稱、備註、地點、可用顏色組合</li>
+        <li>可修改名稱、備註、地點、可用顏色組合（支援日文名稱欄位）</li>
+        <li>在編輯或新增的視窗中輸入完畢後，直接按 <kbd>Enter</kbd> 即可快速儲存變更</li>
         <li>內建系列改完隨時可按「重設為原始」還原</li>
         <li>自訂系列可在編輯視窗內直接刪除</li>
       </ul>
@@ -613,8 +749,9 @@ body:has(.modal:not([hidden])){overflow:hidden}
 <input type="file" id="importFile" accept=".json,application/json" style="display:none">
 <input type="file" id="importCsvFile" accept=".csv" style="display:none">
 
+<script src="data.js"></script>
+<script src="zhuyin_mapping.js"></script>
 <script>
-const DATA = {"colors":["紅","黃","藍","白","紫","岩","粉","冰"],"items":[{"code":"N01","name":"廚師帽","note":"","variants":[true,true,true,true,true,true,true,true],"location":"餐廳"},{"code":"N02","name":"咖啡杯","note":"","variants":[true,true,true,true,true,true,true,true],"location":"咖啡廳"},{"code":"N03","name":"馬卡龍","note":"","variants":[true,true,true,true,true,true,true,false],"location":"甜點店"},{"code":"N04","name":"甜甜圈","note":"","variants":[true,true,true,true,true,true,true,false],"location":"甜點店"},{"code":"N05","name":"爆米花","note":"","variants":[true,true,true,true,true,true,true,false],"location":"電影院"},{"code":"N06","name":"牙刷","note":"","variants":[true,true,true,true,true,true,true,false],"location":"藥局"},{"code":"N07","name":"蒲公英","note":"","variants":[true,true,true,true,true,true,true,false],"location":"動物園"},{"code":"N08","name":"鍬形蟲","note":"","variants":[true,true,true,true,true,true,true,true],"location":"森林"},{"code":"N09","name":"橡栗","note":"","variants":[true,true,true,true,true,true,true,true],"location":"森林"},{"code":"N10","name":"擬餌","note":"","variants":[true,true,true,true,true,true,true,false],"location":"水邊"},{"code":"N11","name":"郵票","note":"","variants":[true,true,true,true,true,true,true,false],"location":"郵局"},{"code":"N12","name":"相框","note":"","variants":[true,true,true,true,true,true,true,false],"location":"美術館"},{"code":"N13","name":"飛機玩具","note":"","variants":[true,true,true,true,true,true,true,false],"location":"機場"},{"code":"N14","name":"電車紙模型","note":"","variants":[true,true,true,true,true,true,true,false],"location":"車站"},{"code":"N15","name":"票券","note":"","variants":[true,true,true,true,true,true,true,false],"location":"車站"},{"code":"N16","name":"貝殼","note":"","variants":[true,true,true,true,true,true,true,false],"location":"海灘"},{"code":"N17","name":"漢堡","note":"","variants":[true,true,true,true,true,true,true,false],"location":"漢堡店"},{"code":"N18","name":"瓶蓋","note":"","variants":[true,true,true,true,true,true,true,false],"location":"便利店"},{"code":"N19","name":"零食","note":"","variants":[true,true,true,true,true,true,true,false],"location":"便利店"},{"code":"N20","name":"蘑菇","note":"","variants":[true,true,true,true,true,true,true,false],"location":"超市"},{"code":"N21","name":"香蕉","note":"","variants":[true,true,true,true,true,true,true,false],"location":"超市"},{"code":"N22","name":"法國麵包","note":"","variants":[true,true,true,true,true,true,true,false],"location":"麵包店"},{"code":"N23","name":"剪刀","note":"","variants":[true,true,true,true,true,true,true,false],"location":"美容院"},{"code":"N24","name":"髮圈","note":"","variants":[true,true,true,true,true,true,true,false],"location":"服裝店"},{"code":"N25","name":"幸運草","note":"","variants":[true,true,true,true,true,true,true,true],"location":"公園"},{"code":"N26","name":"四葉幸運草","note":"","variants":[true,true,true,true,true,true,true,true],"location":"公園"},{"code":"N27","name":"迷你書","note":"","variants":[true,true,true,true,true,true,true,false],"location":"圖書館"},{"code":"N28","name":"路邊貼紙A","note":"","variants":[true,true,true,true,true,true,true,true],"location":"路邊"},{"code":"N29","name":"路邊貼紙B","note":"","variants":[true,true,true,true,true,true,true,true],"location":"路邊"},{"code":"N30","name":"路邊貼紙C","note":"","variants":[true,true,true,true,true,true,true,true],"location":"路邊"},{"code":"N31","name":"金幣","note":"","variants":[true,true,true,true,true,true,true,true],"location":"路邊"},{"code":"N32","name":"壽司","note":"","variants":[true,true,true,true,true,true,true,false],"location":"壽司餐廳"},{"code":"N33","name":"山形徽章","note":"","variants":[true,true,true,true,true,true,true,false],"location":"山丘"},{"code":"N34","name":"球型鑰匙圈","note":"","variants":[true,true,true,true,true,true,true,false],"location":"體育館"},{"code":"N35","name":"葉子帽A","note":"","variants":[false,false,true,false,false,false,false,false],"location":"路邊・雨天"},{"code":"N36","name":"葉子帽B","note":"","variants":[false,false,true,false,false,false,false,false],"location":"路邊・雨天"},{"code":"N37","name":"葉子帽C","note":"","variants":[false,false,true,false,false,false,false,false],"location":"路邊・雨天"},{"code":"N38","name":"雪","note":"","variants":[false,false,true,true,false,false,false,true],"location":"路邊・下雪"},{"code":"N39","name":"主題樂園票券A","note":"","variants":[true,true,true,false,false,false,false,false],"location":"主題樂園"},{"code":"N40","name":"主題樂園票券B","note":"","variants":[true,true,true,false,false,false,false,false],"location":"主題樂園"},{"code":"N41","name":"公車紙模型","note":"","variants":[true,true,true,true,true,true,true,false],"location":"公車站"},{"code":"N42","name":"披薩","note":"","variants":[true,true,true,true,true,true,true,false],"location":"義式餐廳"},{"code":"N43","name":"義大利麵","note":"","variants":[true,true,true,true,true,true,true,false],"location":"義式餐廳"},{"code":"N44","name":"拉麵鑰匙圈","note":"","variants":[true,true,true,true,true,true,true,false],"location":"拉麵店"},{"code":"N45","name":"橋形徽章","note":"","variants":[true,true,true,true,true,true,true,false],"location":"橋樑"},{"code":"N46","name":"飯店備品","note":"","variants":[true,true,true,true,true,true,true,false],"location":"飯店"},{"code":"N47","name":"化妝品","note":"","variants":[true,true,true,true,true,true,true,false],"location":"化妝品商店"},{"code":"N48","name":"運勢（大吉）","note":"","variants":[true,true,true,true,true,true,true,false],"location":"神社和寺廟"},{"code":"N49","name":"運勢（中吉）","note":"","variants":[true,true,true,true,true,true,true,false],"location":"神社和寺廟"},{"code":"N50","name":"運勢（小吉）","note":"","variants":[true,true,true,true,true,true,true,false],"location":"神社和寺廟"},{"code":"N51","name":"運勢（吉）","note":"","variants":[true,true,true,true,true,true,true,false],"location":"神社和寺廟"},{"code":"N52","name":"運勢（末吉）","note":"","variants":[true,true,true,true,true,true,true,false],"location":"神社和寺廟"},{"code":"N53","name":"電池A","note":"","variants":[false,true,false,false,false,false,false,false],"location":"電器行"},{"code":"N54","name":"電池B","note":"","variants":[false,true,false,false,false,false,false,false],"location":"電器行"},{"code":"N55","name":"電池C","note":"","variants":[false,true,false,false,false,false,false,false],"location":"電器行"},{"code":"N56","name":"電池D","note":"","variants":[false,true,false,false,false,false,false,false],"location":"電器行"},{"code":"N57","name":"電池E","note":"","variants":[false,true,false,false,false,false,false,false],"location":"電器行"},{"code":"N58","name":"電池F","note":"","variants":[false,true,false,false,false,false,false,false],"location":"電器行"},{"code":"N59","name":"仙女燈A","note":"","variants":[false,true,false,false,false,false,false,false],"location":"電器行"},{"code":"N60","name":"仙女燈B","note":"","variants":[false,true,false,false,false,false,false,false],"location":"電器行"},{"code":"N61","name":"一碗咖哩","note":"","variants":[true,true,true,true,true,true,true,false],"location":"咖哩餐廳"},{"code":"N62","name":"工具","note":"","variants":[true,true,true,true,true,true,true,false],"location":"五金行"},{"code":"N63","name":"校徽胸針","note":"","variants":[true,true,true,false,false,false,false,false],"location":"大學&amp;學院"},{"code":"N64","name":"塔可餅","note":"","variants":[true,true,true,true,true,true,true,false],"location":"墨西哥餐廳"},{"code":"N65","name":"洗衣用品","note":"","variants":[true,true,true,true,true,true,true,false],"location":"自助洗衣店&amp;乾洗店"},{"code":"N66","name":"韓國泡菜","note":"","variants":[true,true,true,true,true,true,true,true],"location":"韓國餐廳"},{"code":"N67","name":"文具店","note":"","variants":[true,true,true,true,true,true,true,true],"location":"文具店"},{"code":"R01","name":"稀有廚師帽","note":"","variants":[true,true,true,true,true,true,true,false],"location":"餐廳"},{"code":"R02","name":"稀有咖啡杯","note":"","variants":[true,true,true,true,true,true,true,false],"location":"咖啡廳"},{"code":"R10","name":"稀有擬餌","note":"","variants":[true,true,true,true,true,true,true,false],"location":"水邊"},{"code":"R15","name":"稀有票券","note":"","variants":[true,false,false,false,false,false,false,false],"location":"車站"},{"code":"R21","name":"稀有香蕉","note":"","variants":[true,true,true,true,true,true,true,false],"location":"超市"},{"code":"R22","name":"稀有法國麵包","note":"","variants":[true,true,true,true,true,true,true,false],"location":"麵包店"},{"code":"R23","name":"稀有剪刀","note":"","variants":[true,true,true,true,true,true,true,false],"location":"美容院"},{"code":"R25","name":"稀有幸運草","note":"","variants":[true,true,true,true,true,true,true,true],"location":"公園"},{"code":"R26","name":"稀有四葉幸運草","note":"","variants":[true,true,true,true,true,true,true,true],"location":"公園"},{"code":"R31","name":"稀有金幣","note":"","variants":[true,true,true,true,true,true,true,true],"location":"路邊"},{"code":"L01","name":"瑪利歐帽子","note":"","variants":[true,true,true,false,true,false,false,false]},{"code":"L02","name":"農曆新年裝飾：紅色","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L03","name":"農曆新年裝飾：金色","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L04","name":"西洋棋：白","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L05","name":"西洋棋：黑","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L06","name":"手指滑板","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L07","name":"花札1・荻","note":"","variants":[true,true,true,false,true,false,false,false]},{"code":"L08","name":"花札1・芒","note":"","variants":[true,true,true,false,true,false,false,false]},{"code":"L09","name":"花札1・櫻","note":"","variants":[true,true,true,false,true,false,false,false]},{"code":"L10","name":"花札1・藤","note":"","variants":[true,true,true,false,true,false,false,false]},{"code":"L11","name":"花札1・菖蒲","note":"","variants":[true,true,true,false,true,false,false,false]},{"code":"L12","name":"花札1・牡丹","note":"","variants":[true,true,true,false,true,false,false,false]},{"code":"L13","name":"花札2・樣式I","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L14","name":"花札2・樣式II","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L15","name":"花札2・樣式III","note":"","variants":[false,false,false,false,false,true,true,false]},{"code":"L16","name":"南瓜燈","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L17","name":"萬聖節糖果","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L18","name":"萬聖節燈籠","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L19","name":"一週年紀念零食","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L20","name":"Koppaite太空衣","note":"","variants":[true,true,true,false,false,false,false,false]},{"code":"L21","name":"連指手套","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L22","name":"2023眼鏡","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L23","name":"2024眼鏡","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L24","name":"情人節貼紙","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L25","name":"反向情人節貼紙","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L26","name":"禮物貼紙・金色","note":"","variants":[true,true,true,true,true,false,true,false]},{"code":"L27","name":"復活節彩蛋","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L28","name":"兔子蛋","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L29","name":"運動鞋鑰匙圈","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L30","name":"Pikmin 4 太空船","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L31","name":"Pikmin 4 玩具","note":"","variants":[true,true,true,true,true,true,true,true]},{"code":"L32","name":"麻將・1","note":"（東南西北中發白）","variants":[true,true,true,true,true,true,true,false]},{"code":"L33","name":"麻將・2","note":"（一萬、一條、一筒、五萬、九萬、九條、九筒）","variants":[true,true,true,true,true,true,true,false]},{"code":"L34","name":"麻將・3","note":"（兩萬、三萬、四萬、六萬、七萬、八萬、九萬）","variants":[false,true,true,true,true,true,true,false]},{"code":"L35","name":"麻將・4","note":"（二條、三條、四條、六條、七條、八條）","variants":[false,true,true,true,true,true,true,false]},{"code":"L36","name":"麻將・5","note":"（五條）","variants":[true,true,false,true,false,false,false,false]},{"code":"L37","name":"冰淇淋・經典","note":"","variants":[true,true,true,true,true,true,true,true]},{"code":"L38","name":"冰淇淋・2024","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L39","name":"拼圖2021・冬季回憶","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L40","name":"拼圖2022・夏季回憶","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L41","name":"拼圖2023・夏季回憶","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L42","name":"拼圖2024・秋季回憶","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L43","name":"春季貼紙","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L44","name":"夏季貼紙","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L45","name":"秋季貼紙","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L46","name":"冬季貼紙","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L47","name":"撲克牌・梅花 I","note":"紅3 黃4 藍A 白Q 紫9 岩6 粉2","variants":[true,true,true,true,true,true,true,false]},{"code":"L48","name":"撲克牌・梅花 II","note":"紅5 黃J 藍8 紫K 岩10 粉7","variants":[true,true,true,false,true,true,true,false]},{"code":"L49","name":"撲克牌・菱形 I","note":"紅A 黃2 藍3 白4 紫6 岩7 粉5","variants":[true,true,true,true,true,true,true,false]},{"code":"L50","name":"撲克牌・菱形 II","note":"紅8 黃9 藍10 白J 岩K 粉Q","variants":[true,true,true,true,false,true,true,false]},{"code":"L51","name":"撲克牌・鬼牌","note":"","variants":[false,false,false,false,true,false,false,false]},{"code":"L52","name":"起司","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L53","name":"珊瑚","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L54","name":"顏料","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L55","name":"緞帶花飾","note":"","variants":[true,true,false,false,false,false,false,false]},{"code":"L56","name":"三週年紀念紙杯蛋糕","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L57","name":"裝飾球","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L58","name":"2025派對禮炮","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L59","name":"巧克力","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L60","name":"里約嘉年華","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L61","name":"下午茶","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L62","name":"任天堂主機","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L63","name":"迷你樂器","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L64","name":"衝浪板鑰匙圈","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L65","name":"刨冰","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L66","name":"月餅","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L67","name":"照片徽章","note":"","variants":[true,false,false,false,false,false,false,false]},{"code":"L68","name":"亡靈節","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L69","name":"四週年紀念花盒","note":"","variants":[true,true,true,true,true,true,true,true]},{"code":"L70","name":"四週年紀念零食","note":"","variants":[true,true,true,true,true,true,true,false]},{"code":"L71","name":"2025裝飾品","note":"","variants":[true,true,true,true,true,true,true,true]},{"code":"L72","name":"奶嘴","note":"","variants":[true,false,false,false,false,false,false,false]},{"code":"L73","name":"日式年菜","note":"2026 January","variants":[true,true,true,true,true,true,true,true]},{"code":"L74","name":"金色飛機玩具","note":"","variants":[false,true,false,false,false,false,false,false]},{"code":"L75","name":"2026巧克力","note":"2026 February","variants":[true,true,true,true,true,true,true,true]},{"code":"L76","name":"彩色粉末","note":"2026 March","variants":[true,true,true,true,true,true,true,true]},{"code":"L77","name":"荷蘭木鞋鑰匙圈","note":"2026 April","variants":[true,true,true,true,true,true,true,true]},{"code":"L78","name":"遊戲卡匣","note":"2026 May","variants":[true,true,true,true,true,true,true,true]},{"code":"L79","name":"花冠","note":"2026 June","variants":[true,true,true,true,true,true,true,true]}]};
 const COLORS = DATA.colors;
 const ITEMS = DATA.items;
 const dotLabelsMap = {
@@ -660,15 +797,56 @@ const allItems = () => {
   return [...merged, ...customItems];
 };
 
-let filterColor = null;
-let expandedItems = new Set();
 let filterCat = 'all';
+let filterStatus = 'all';
+let filterColor = null;
+let sortDesc = { N: false, L: false };
+let expandedItems = new Set();
 let searchQ = '';
+let lang = localStorage.getItem('pikmin_lang') || 'zh';
+function getItemName(it) { return (lang === 'ja' && it.name_ja) ? it.name_ja : it.name; }
+function getQwertyPinyin(str) {
+  if (!window.ZHUYIN_MAP) return str.toLowerCase();
+  let res = '';
+  for (let char of str) {
+    if (ZHUYIN_MAP[char]) {
+      res += ZHUYIN_MAP[char].replace(/[3467 ]/g, '');
+    } else {
+      res += char.toLowerCase();
+    }
+  }
+  return res;
+}
 
 const $ = id => document.getElementById(id);
 const keyFor = (code, ci) => code + '_' + ci;
 const isCollected = (code, ci) => !!collected[keyFor(code,ci)];
 const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(collected));
+
+function createParticleBurst(container) {
+  const rect = container.getBoundingClientRect();
+  const cx = rect.width / 2;
+  const cy = rect.height / 2;
+  const color = '#f6c961';
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 40 + Math.random() * 80;
+    const tx = Math.cos(angle) * distance;
+    const ty = Math.sin(angle) * distance;
+    const size = 3 + Math.random() * 5;
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.background = color;
+    p.style.left = cx + 'px';
+    p.style.top = cy + 'px';
+    p.style.setProperty('--tx', tx + 'px');
+    p.style.setProperty('--ty', ty + 'px');
+    container.appendChild(p);
+    setTimeout(() => p.remove(), 2500);
+  }
+}
 
 function updateItemFrame(code){
   const item = allItems().find(it => it.code === code);
@@ -683,9 +861,26 @@ function updateItemFrame(code){
     if (container) {
       container.dataset.targetOffset = offset;
       if (offset === 0) {
+        if (!container.classList.contains('completed')) {
+          createParticleBurst(container);
+        }
         rect.style.strokeDashoffset = offset;
         setTimeout(() => {
-          if (container.dataset.targetOffset === "0") container.classList.add('completed');
+          if (container.dataset.targetOffset === "0") {
+            const now = Date.now();
+            const currentPhase = now % 3000;
+            let timeToPeak = 1500 - currentPhase;
+            if (timeToPeak < 0) timeToPeak += 3000;
+            if (timeToPeak < 1500) timeToPeak += 3000; // Force it to stay bright for at least 1.5s
+            
+            container.classList.add('completed');
+            container.classList.add('completed-new');
+            
+            setTimeout(() => {
+              container.style.setProperty('--sync-delay', `-${Date.now() % 3000}ms`);
+              container.classList.remove('completed-new');
+            }, timeToPeak);
+          }
         }, 400);
       } else {
         if (container.classList.contains('completed')) {
@@ -737,20 +932,31 @@ function buildFilters(){
     html += `<button class="chip ${filterCat===c.k?'active':''}" data-cat="${c.k}">${c.label}</button>`;
   });
   html += '<span style="display:inline-block;width:1px;background:var(--line);margin:4px 8px;align-self:stretch"></span>';
-  html += `<button class="chip ${filterColor===null?'active':''}" data-color="">全色</button>`;
-  COLORS.forEach(c => {
-    html += `<button class="chip ${filterColor===c?'active':''}" data-color="${c}">${c}</button>`;
+  
+  const stats = [{k:'collected',label:'已收集'}, {k:'uncollected',label:'未收集'}];
+  stats.forEach(s => {
+    html += `<button class="chip ${filterStatus===s.k?'active':''}" data-status="${s.k}">${s.label}</button>`;
   });
+  
   const f = $('filters');
   f.innerHTML = html;
   f.querySelectorAll('[data-cat]').forEach(b => b.onclick = () => { filterCat = b.dataset.cat; render(); });
-  f.querySelectorAll('[data-color]').forEach(b => b.onclick = () => { filterColor = b.dataset.color || null; render(); });
+  f.querySelectorAll('[data-status]').forEach(b => {
+    b.onclick = () => {
+      if (filterStatus === b.dataset.status) filterStatus = 'all';
+      else filterStatus = b.dataset.status;
+      render();
+    };
+  });
 }
 
 function computeStats(){
   let total = 0, got = 0;
   const byColor = COLORS.map(() => ({total:0, got:0}));
   allItems().forEach(it => {
+    const cat = it.code.startsWith('L') ? 'L' : 'N';
+    if (filterCat !== 'all' && cat !== filterCat) return;
+
     it.variants.forEach((ex, ci) => {
       if (!ex) return;
       total++; byColor[ci].total++;
@@ -885,39 +1091,105 @@ function updateNumberDisplay(container, newVal){
 let isFirstRender = true;
 function renderHeader(){
   const s = computeStats();
-  const pct = s.total ? (s.got/s.total*100) : 0;
-  $('total').textContent = s.total;
-
-  let cs = '';
+  
+  let targetTotal = 0;
+  let targetGot = 0;
+  let segments = [];
+  
+  if (filterColor) {
+    const ci = COLORS.indexOf(filterColor);
+    const b = s.byColor[ci];
+    targetTotal = b.total;
+    targetGot = b.got;
+  } else {
+    targetTotal = s.total;
+    targetGot = s.got;
+  }
+  
   COLORS.forEach((c, i) => {
     const b = s.byColor[i];
-    const p = b.total ? Math.round(b.got/b.total*100) : 0;
-    cs += `<div class="cs"><span class="dot" style="background:var(--c-${c})"></span><span class="label">${c}</span><span class="val">${b.got}／${b.total} · ${p}%</span></div>`;
+    let segPct = 0;
+    if (filterColor) {
+      if (filterColor === c) {
+        segPct = targetTotal ? (targetGot / targetTotal * 100) : 0;
+      }
+    } else {
+      if (s.total > 0 && b.got > 0) {
+        segPct = (b.got / s.total * 100);
+      }
+    }
+    segments.push({ color: `var(--c-${c})`, pct: segPct, name: c });
   });
-  $('colorStats').innerHTML = cs;
+  
+  const pct = targetTotal ? (targetGot / targetTotal * 100) : 0;
+  $('total').textContent = targetTotal;
 
   const bar = $('bar');
 
   if (isFirstRender) {
     isFirstRender = false;
-
-    bar.style.transition = 'none';
-    bar.style.transform = 'scaleX(0)';
-    void bar.offsetWidth;
+    let segHtml = '';
+    segments.forEach(seg => {
+      segHtml += `<div class="bar-segment" style="background:${seg.color}; width:0%"></div>`;
+    });
+    bar.innerHTML = segHtml;
+    
     snapNumber($('collected'), 0);
     $('pct').textContent = '0.0%';
     $('pct').dataset.val = 0;
 
     setTimeout(() => {
-      bar.style.transition = 'transform 1.2s cubic-bezier(.16,1,.3,1)';
-      bar.style.transform = `scaleX(${pct / 100})`;
-      countUp($('collected'), s.got, 1200, 5);
+      const segEls = bar.querySelectorAll('.bar-segment');
+      let lastVisible = -1;
+      for (let i = segments.length - 1; i >= 0; i--) {
+        if (segments[i].pct > 0) { lastVisible = i; break; }
+      }
+      segments.forEach((seg, i) => {
+        if (segEls[i]) {
+          segEls[i].style.width = seg.pct + '%';
+          segEls[i].style.borderRightWidth = (seg.pct > 0 && i !== lastVisible) ? '2px' : '0px';
+          segEls[i].dataset.color = seg.name;
+          segEls[i].style.cursor = 'pointer';
+          segEls[i].onclick = () => {
+            if (filterColor === seg.name) filterColor = null;
+            else filterColor = seg.name;
+            render();
+          };
+        }
+      });
+      countUp($('collected'), targetGot, 1200, 5);
       animateNumber($('pct'), pct, v => v.toFixed(1) + '%', 1200, 5);
-      setTimeout(() => { bar.style.transition = ''; }, 1300);
     }, 500);
   } else {
-    bar.style.transform = `scaleX(${pct / 100})`;
-    updateNumberDisplay($('collected'), s.got);
+    let currentSegments = bar.querySelectorAll('.bar-segment');
+    if (currentSegments.length !== segments.length) {
+      let segHtml = '';
+      segments.forEach(seg => {
+        segHtml += `<div class="bar-segment" style="background:${seg.color}; width:0%"></div>`;
+      });
+      bar.innerHTML = segHtml;
+      void bar.offsetWidth;
+      currentSegments = bar.querySelectorAll('.bar-segment');
+    }
+    let lastVisible = -1;
+    for (let i = segments.length - 1; i >= 0; i--) {
+      if (segments[i].pct > 0) { lastVisible = i; break; }
+    }
+    segments.forEach((seg, i) => {
+      if (currentSegments[i]) {
+        currentSegments[i].style.background = seg.color;
+        currentSegments[i].style.width = seg.pct + '%';
+        currentSegments[i].style.borderRightWidth = (seg.pct > 0 && i !== lastVisible) ? '2px' : '0px';
+        currentSegments[i].dataset.color = seg.name;
+        currentSegments[i].style.cursor = 'pointer';
+        currentSegments[i].onclick = () => {
+          if (filterColor === seg.name) filterColor = null;
+          else filterColor = seg.name;
+          render();
+        };
+      }
+    });
+    updateNumberDisplay($('collected'), targetGot);
     animateNumber($('pct'), pct, v => v.toFixed(1) + '%');
   }
 }
@@ -933,17 +1205,62 @@ function renderList(){
     if (filterCat === 'N' && !it.code.startsWith('N')) return false;
     if (filterCat === 'L' && !it.code.startsWith('L')) return false;
     if (q) {
-      const isJp = it.name.startsWith('運勢');
-      const match = it.name.toLowerCase().includes(q)
-        || it.code.toLowerCase().includes(q)
+      const qClean = q.replace(/[3467 ]/g, '');
+      const dispName = getItemName(it);
+      const isJp = dispName.startsWith('運勢');
+      const nameQ = getQwertyPinyin(dispName);
+      const locQ = it.location ? getQwertyPinyin(it.location) : '';
+      const match = dispName.toLowerCase().includes(q)
+        || (it.name_ja && it.name_ja.toLowerCase().includes(q))
+        || it.name.toLowerCase().includes(q)
+        || nameQ.includes(qClean)
+        || (it.name_ja && getQwertyPinyin(it.name_ja).includes(qClean))
+        || getQwertyPinyin(it.name).includes(qClean)
+        || it.code.toLowerCase().includes(qClean)
+        || locQ.includes(qClean)
         || (it.location && it.location.toLowerCase().includes(q))
-        || (isJp && '日本限定'.includes(q));
+        || (isJp && '日本限定'.includes(q))
+        || (isJp && getQwertyPinyin('日本限定').includes(qClean));
       if (!match) return false;
     }
+    let hasUncollected = false;
+    let hasCollected = false;
+    const rare = rareMap[it.code];
+    
     if (filterColor !== null) {
       const ci = COLORS.indexOf(filterColor);
-      const rare = rareMap[it.code];
       if (!it.variants[ci] && !(rare && rare.variants[ci])) return false;
+      
+      if (it.variants[ci]) {
+        if (isCollected(it.code, ci)) hasCollected = true;
+        else hasUncollected = true;
+      }
+      if (rare && rare.variants[ci]) {
+        if (isCollected(rare.code, ci)) hasCollected = true;
+        else hasUncollected = true;
+      }
+      
+      if (filterStatus === 'collected' && !hasCollected) return false;
+      if (filterStatus === 'uncollected' && !hasUncollected) return false;
+    } else {
+      if (filterStatus !== 'all') {
+        it.variants.forEach((v, ci) => {
+          if (v) {
+            if (isCollected(it.code, ci)) hasCollected = true;
+            else hasUncollected = true;
+          }
+        });
+        if (rare) {
+          rare.variants.forEach((v, ci) => {
+            if (v) {
+              if (isCollected(rare.code, ci)) hasCollected = true;
+              else hasUncollected = true;
+            }
+          });
+        }
+        if (filterStatus === 'collected' && hasUncollected) return false;
+        if (filterStatus === 'uncollected' && !hasUncollected) return false;
+      }
     }
     return true;
   });
@@ -954,11 +1271,29 @@ function renderList(){
     if (groups[g]) groups[g].push(it);
   });
 
+  ['N', 'L'].forEach(g => {
+    groups[g].sort((a,b) => {
+      const getNum = c => parseInt(c.match(/\d+/) || [0], 10);
+      const numA = getNum(a.code);
+      const numB = getNum(b.code);
+      return sortDesc[g] ? (numB - numA) : (numA - numB);
+    });
+  });
+
   const titles = {N:'常駐', L:'限定'};
 
 function renderGroup(g){
     const list = groups[g];
-    let html = `<div class="section-title">${titles[g]} · ${list.length}</div>`;
+    let html = `
+      <div class="section-title" style="display:flex; align-items:center; gap:8px;">
+        <button class="icon-btn sort-btn ${sortDesc[g] ? 'desc' : ''}" data-sort-btn="${g}" aria-label="切換排序" style="width:24px; height:24px; padding:0; min-width:auto; margin:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
+        </button>
+        ${titles[g]} · ${list.length}
+      </div>`;
     html += `<button class="add-item" data-add-prefix="${g}">
         <span class="plus">＋</span>
         <span class="label">新增${titles[g]}系列</span>
@@ -969,20 +1304,31 @@ function renderGroup(g){
       const gotV = it.variants.reduce((s,v,ci)=>s+(v&&isCollected(it.code,ci)?1:0),0);
       let vhtml = '';
       const isLabeled = !!it.dotLabels;
+      let normalHasMatch = false;
       it.variants.forEach((ex, ci) => {
         const c = COLORS[ci];
         const label = it.dotLabels?.[ci];
+        let isDim = '';
+        if (filterColor) {
+          if (filterColor !== c) isDim = 'dimmed';
+          else if (ex) {
+            const got = isCollected(it.code, ci);
+            if (filterStatus === 'uncollected' && got) isDim = 'dimmed';
+            if (filterStatus === 'collected' && !got) isDim = 'dimmed';
+            if (isDim === '') normalHasMatch = true;
+          }
+        }
         if (!ex) {
-          vhtml += `<div class="v disabled" title="${c}（無此色）"><span class="swatch"></span></div>`;
+          vhtml += `<div class="v disabled ${isDim}" data-tooltip="${c}（無此色）"><span class="swatch"></span></div>`;
         } else {
           const got = isCollected(it.code, ci);
           if (isLabeled) {
             const styleStr = got
               ? `style="border-color:var(--c-${c});background:color-mix(in srgb, var(--c-${c}) 14%, var(--bg))"`
               : '';
-            vhtml += `<div class="v labeled ${got?'collected':''}" data-code="${it.code}" data-ci="${ci}" title="${c}" ${styleStr}>${label?formatDotLabel(label):''}</div>`;
+            vhtml += `<div class="v labeled ${got?'collected':''} ${isDim}" data-code="${it.code}" data-ci="${ci}" data-tooltip="${c}" ${styleStr}>${label?formatDotLabel(label):''}</div>`;
           } else {
-            vhtml += `<div class="v ${got?'collected':''}" data-code="${it.code}" data-ci="${ci}" title="${c}"><span class="swatch" style="background:var(--c-${c})"></span></div>`;
+            vhtml += `<div class="v ${got?'collected':''} ${isDim}" data-code="${it.code}" data-ci="${ci}" data-tooltip="${c}"><span class="swatch" style="background:var(--c-${c})"></span></div>`;
           }
         }
       });
@@ -993,18 +1339,32 @@ function renderGroup(g){
         const rTotal = rare.variants.filter(v=>v).length;
         const rGot = rare.variants.reduce((s,v,ci)=>s+(v&&isCollected(rare.code,ci)?1:0),0);
         let rvhtml = '';
+        let rareHasMatch = false;
         rare.variants.forEach((ex, ci) => {
           const c = COLORS[ci];
+          let isDim = '';
+          if (filterColor) {
+            if (filterColor !== c) isDim = 'dimmed';
+            else if (ex) {
+              const got = isCollected(rare.code, ci);
+              if (filterStatus === 'uncollected' && got) isDim = 'dimmed';
+              if (filterStatus === 'collected' && !got) isDim = 'dimmed';
+              if (isDim === '') rareHasMatch = true;
+            }
+          }
           if (!ex) {
-            rvhtml += `<div class="v disabled"><span class="swatch"></span></div>`;
+            rvhtml += `<div class="v disabled ${isDim}" data-tooltip="${c}（無此色）"><span class="swatch"></span></div>`;
           } else {
             const got = isCollected(rare.code, ci);
-            rvhtml += `<div class="v ${got?'collected':''}" data-code="${rare.code}" data-ci="${ci}" title="${c}"><span class="swatch" style="background:var(--c-${c})"></span></div>`;
+            rvhtml += `<div class="v ${got?'collected':''} ${isDim}" data-code="${rare.code}" data-ci="${ci}" data-tooltip="${c}"><span class="swatch" style="background:var(--c-${c})"></span></div>`;
           }
         });
+        if (filterColor && !normalHasMatch && rareHasMatch) {
+          expandedItems.add(it.code);
+        }
         const rPct = rTotal ? (rGot/rTotal)*100 : 0;
         const rOffset = 100 - rPct;
-        rareHtml = `<div class="rare-panel"><div class="rare-inner${rOffset===0?' completed':''}" data-target-offset="${rOffset}">
+        rareHtml = `<div class="rare-panel"><div class="rare-inner${rOffset===0?' completed':''}" data-target-offset="${rOffset}" style="--sync-delay:-${Date.now()%3000}ms">
         <svg class="progress-frame">
             <rect x="0" y="0" width="100%" height="100%" rx="10" ry="10" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${rOffset}" data-progress-for="${rare.code}"></rect>
         </svg>
@@ -1015,18 +1375,18 @@ function renderGroup(g){
 
       const pct = totalV ? (gotV/totalV)*100 : 0;
       const offset = 100 - pct;
-      html += `<div class="item${expandedItems.has(it.code)?' expanded':''}${offset===0?' completed':''}" data-item-code="${it.code}" data-target-offset="${offset}">
+      html += `<div class="item${expandedItems.has(it.code)?' expanded':''}${offset===0?' completed':''}" data-item-code="${it.code}" data-target-offset="${offset}" style="--sync-delay:-${Date.now()%3000}ms">
         <svg class="progress-frame">
             <rect x="0" y="0" width="100%" height="100%" rx="10" ry="10" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${offset}" data-progress-for="${it.code}"></rect>
         </svg>
         <div class="item-head">
           <span class="item-code">${it.code}</span>
-          <span class="item-name">${it.name}</span>
+          <span class="item-name">${getItemName(it)}</span>
           ${rare?`<button class="rare-toggle" data-toggle="${it.code}"><span>稀有</span><span class="arrow">▸</span></button>`:''}
           <span class="item-progress" data-progress-text="${it.code}">${gotV}／${totalV}</span>
           <button class="edit-item" data-edit="${it.code}">編輯</button>
         </div>
-        ${it.name.startsWith('運勢')?`<div class="region-tag-row"><span class="region-tag">日本限定</span></div>`:''}
+        ${getItemName(it).startsWith('運勢')?`<div class="region-tag-row"><span class="region-tag">日本限定</span></div>`:''}
         ${it.note?`<div class="item-note">${it.note}</div>`:''}
         ${it.location?`<div class="item-location">${it.location}</div>`:''}
         <div class="variants">${vhtml}</div>
@@ -1038,6 +1398,14 @@ function renderGroup(g){
 
   $('listN').innerHTML = renderGroup('N');
   $('listL').innerHTML = renderGroup('L');
+
+  document.querySelectorAll('[data-sort-btn]').forEach(btn => {
+    btn.onclick = () => {
+      const g = btn.dataset.sortBtn;
+      sortDesc[g] = !sortDesc[g];
+      renderList();
+    };
+  });
 
   document.querySelectorAll('.v[data-code]').forEach(el => {
     el.onclick = (e) => { e.stopPropagation(); toggle(el.dataset.code, parseInt(el.dataset.ci)); };
@@ -1062,7 +1430,19 @@ function renderGroup(g){
 
 function render(){ buildFilters(); renderHeader(); renderList(); }
 
-$('search').addEventListener('input', e => { searchQ = e.target.value; renderList(); });
+$('search').addEventListener('input', e => { 
+  searchQ = e.target.value; 
+  $('clearSearch').style.display = searchQ.length > 0 ? 'flex' : 'none';
+  renderList(); 
+});
+$('clearSearch').addEventListener('click', () => {
+  $('search').value = '';
+  searchQ = '';
+  $('clearSearch').style.display = 'none';
+  renderList();
+  $('search').focus();
+});
+
 $('reset').onclick = () => {
   if (confirm('確定要清除全部收集紀錄嗎？此動作無法復原。')) {
     collected = {}; save(); render();
@@ -1093,7 +1473,7 @@ function renderCustomList(){
   $('customList').innerHTML = customItems.map((it, idx)=>
     `<li>
        <span class="code">${it.code}</span>
-       <span class="name">${it.name}</span>
+       <span class="name">${getItemName(it)}</span>
        <button class="del" data-idx="${idx}">刪除</button>
      </li>`
   ).join('');
@@ -1140,6 +1520,7 @@ function openEditFor(code){
   $('codeField').style.display = 'none';
   $('customSection').style.display = 'none';
   $('newName').value = item.name;
+  $('newNameJa').value = item.name_ja || '';
   $('newNote').value = item.note || '';
   $('newLocation').value = item.location || '';
   newVariants = [...item.variants];
@@ -1184,6 +1565,7 @@ function openNewModal(prefix){
   $('codeField').style.display = '';
   $('customSection').style.display = '';
   $('newName').value = '';
+  $('newNameJa').value = '';
   $('newNote').value = '';
   $('newLocation').value = '';
   $('newNum').value = '';
@@ -1202,6 +1584,12 @@ function openNewModal(prefix){
 
 $('closeEdit').onclick = closeEditModal;
 $('editModal').onclick = (e)=>{ if (e.target.id === 'editModal') closeEditModal(); };
+$('editModal').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    $('saveNew').click();
+  }
+});
 
 let newPrefix = 'N';
 
@@ -1217,6 +1605,7 @@ bindPrefixGroup();
 
 $('saveNew').onclick = ()=>{
   const name = $('newName').value.trim();
+  const nameJa = $('newNameJa').value.trim();
   if (!name) { alert('名稱必填'); return; }
   if (!newVariants.some(v=>v)) { alert('至少要保留一個顏色'); return; }
   const note = $('newNote').value.trim();
@@ -1226,10 +1615,10 @@ $('saveNew').onclick = ()=>{
     const isCustom = customItems.some(it => it.code === editingCode);
     if (isCustom) {
       const idx = customItems.findIndex(it => it.code === editingCode);
-      customItems[idx] = {code: editingCode, name, note, location, variants: [...newVariants]};
+      customItems[idx] = {code: editingCode, name, name_ja: nameJa, note, location, variants: [...newVariants]};
       saveCustom();
     } else {
-      overrides[editingCode] = {name, note, location, variants: [...newVariants]};
+      overrides[editingCode] = {name, name_ja: nameJa, note, location, variants: [...newVariants]};
       saveOverrides();
     }
     closeEditModal();
@@ -1250,9 +1639,9 @@ $('saveNew').onclick = ()=>{
       return;
     }
   }
-  customItems.push({code, name, note, location, variants:[...newVariants]});
+  customItems.push({code, name, name_ja: nameJa, note, location, variants:[...newVariants]});
   saveCustom();
-  $('newNum').value = ''; $('newName').value = ''; $('newNote').value = ''; $('newLocation').value = '';
+  $('newNum').value = ''; $('newName').value = ''; $('newNameJa').value = ''; $('newNote').value = ''; $('newLocation').value = '';
   newVariants = [true,true,true,true,true,true,true,true];
   renderColorToggle();
   renderCustomList();
@@ -1327,11 +1716,11 @@ $('exportCsv').onclick = async () => {
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet('Pikmin');
   
-  sheet.addRow(['', '', '備註', '地點', '1R', '2Y', '3B', '4W', '5Pu', '6G', '7Pi', '8Cy']);
-  sheet.addRow(['', '', '', '', '紅', '黃', '藍', '白', '紫', '岩', '粉', '冰']);
+  sheet.addRow(['代碼', '名稱', '日文名稱', '備註', '地點', '1R', '2Y', '3B', '4W', '5Pu', '6G', '7Pi', '8Cy']);
+  sheet.addRow(['', '', '', '', '', '紅', '黃', '藍', '白', '紫', '岩', '粉', '冰']);
   
   allItems().forEach(it => {
-    const rowValues = [it.code, it.name, it.note || '', it.location || ''];
+    const rowValues = [it.code, it.name, it.name_ja || '', it.note || '', it.location || ''];
     it.variants.forEach((ex, ci) => {
       if (!ex) {
         rowValues.push('');
@@ -1391,19 +1780,28 @@ $('importCsvFile').onchange = async (e) => {
       
       if (sheet.rowCount === 0) throw new Error('檔案為空');
       
+      let colOffset = 0;
+      let hasNameJa = false;
+      const headerRow = sheet.getRow(1);
+      if (headerRow.getCell(3).text?.trim() === '日文名稱') {
+        colOffset = 1;
+        hasNameJa = true;
+      }
+      
       sheet.eachRow((row, rowNumber) => {
         if (rowNumber <= 2) return;
         
         const code = row.getCell(1).text?.trim();
         const name = row.getCell(2).text?.trim();
-        const note = row.getCell(3).text?.trim() || '';
-        const location = row.getCell(4).text?.trim() || '';
+        const name_ja = hasNameJa ? (row.getCell(3).text?.trim() || '') : '';
+        const note = row.getCell(3 + colOffset).text?.trim() || '';
+        const location = row.getCell(4 + colOffset).text?.trim() || '';
         
         if (!code || !name) return;
         
         const variants = [];
         for (let c = 0; c < 8; c++) {
-          const cell = row.getCell(5 + c);
+          const cell = row.getCell(5 + colOffset + c);
           const v = cell.text?.trim() || '';
           
           if (!v) {
@@ -1427,16 +1825,17 @@ $('importCsvFile').onchange = async (e) => {
         
         const defaultIt = ITEMS.find(it => it.code === code);
         if (!defaultIt) {
-          newCustomItems.push({code, name, note, location, variants});
+          newCustomItems.push({code, name, name_ja, note, location, variants});
         } else {
           const isNameDiff = name !== defaultIt.name;
+          const isNameJaDiff = name_ja !== (defaultIt.name_ja || '');
           const isNoteDiff = note !== (defaultIt.note || '');
           const isLocDiff = location !== (defaultIt.location || '');
           let isVarDiff = false;
           for (let c = 0; c < 8; c++) if (variants[c] !== defaultIt.variants[c]) isVarDiff = true;
           
-          if (isNameDiff || isNoteDiff || isLocDiff || isVarDiff) {
-            newOverrides[code] = {name, note, location, variants};
+          if (isNameDiff || isNameJaDiff || isNoteDiff || isLocDiff || isVarDiff) {
+            newOverrides[code] = {name, name_ja, note, location, variants};
           }
         }
       });
@@ -1445,6 +1844,15 @@ $('importCsvFile').onchange = async (e) => {
       const text = await file.text();
       const lines = text.split(/\r?\n/);
       if (lines.length === 0) throw new Error('檔案為空');
+      
+      let colOffset = 0;
+      let hasNameJa = false;
+      if (lines[0]) {
+        if (lines[0].includes('日文名稱')) {
+          colOffset = 1;
+          hasNameJa = true;
+        }
+      }
       
       for (let i = 2; i < lines.length; i++) {
         let line = lines[i].trim();
@@ -1471,11 +1879,12 @@ $('importCsvFile').onchange = async (e) => {
         
         const code = row[0];
         const name = row[1];
-        const note = row[2] || '';
-        const location = row[3] || '';
+        const name_ja = hasNameJa ? (row[2] || '') : '';
+        const note = row[2 + colOffset] || '';
+        const location = row[3 + colOffset] || '';
         const variants = [];
         for (let c = 0; c < 8; c++) {
-          const v = row[4 + c];
+          const v = row[4 + colOffset + c];
           if (v === '' || v === undefined) {
             variants.push(false);
           } else {
@@ -1489,16 +1898,17 @@ $('importCsvFile').onchange = async (e) => {
         
         const defaultIt = ITEMS.find(it => it.code === code);
         if (!defaultIt) {
-          newCustomItems.push({code, name, note, location, variants});
+          newCustomItems.push({code, name, name_ja, note, location, variants});
         } else {
           const isNameDiff = name !== defaultIt.name;
+          const isNameJaDiff = name_ja !== (defaultIt.name_ja || '');
           const isNoteDiff = note !== (defaultIt.note || '');
           const isLocDiff = location !== (defaultIt.location || '');
           let isVarDiff = false;
           for (let c = 0; c < 8; c++) if (variants[c] !== defaultIt.variants[c]) isVarDiff = true;
           
-          if (isNameDiff || isNoteDiff || isLocDiff || isVarDiff) {
-            newOverrides[code] = {name, note, location, variants};
+          if (isNameDiff || isNameJaDiff || isNoteDiff || isLocDiff || isVarDiff) {
+            newOverrides[code] = {name, name_ja, note, location, variants};
           }
         }
       }
@@ -1535,6 +1945,13 @@ $('menuFab').onclick = (e) => {
   popup.hidden = !popup.hidden;
   $('menuFab').classList.toggle('open', !popup.hidden);
 };
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (!$('editModal').hidden) closeEditModal();
+    else if (!$('helpModal').hidden) $('helpModal').hidden = true;
+  }
+});
+
 document.addEventListener('click', (e) => {
   const popup = $('menuPopup');
   if (!popup.hidden && !popup.contains(e.target) && !$('menuFab').contains(e.target)) {
@@ -1550,6 +1967,11 @@ const applyDark = (on) => {
 };
 applyDark(localStorage.getItem(DARK_KEY) === '1');
 
+$('toggleLang').onclick = () => {
+  lang = lang === 'zh' ? 'ja' : 'zh';
+  localStorage.setItem('pikmin_lang', lang);
+  render();
+};
 $('toggleDark').onclick = () => {
   document.documentElement.classList.add('theme-transitioning');
   applyDark(!document.documentElement.classList.contains('dark'));
