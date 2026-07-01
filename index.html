@@ -999,6 +999,7 @@ function applyLang() {
 }
 
 let lang = localStorage.getItem('pikmin_lang') || 'zh';
+function getItemLocation(it) { return (lang === 'ja' && it.location_ja) ? it.location_ja : (it.location || ''); }
 function getItemName(it) { return (lang === 'ja' && it.name_ja) ? it.name_ja : it.name; }
 function getQwertyPinyin(str) {
   if (!window.ZHUYIN_MAP) return str.toLowerCase();
@@ -1514,16 +1515,16 @@ function renderGroup(g){
           }
         }
         if (!ex) {
-          vhtml += `<div class="v disabled ${isDim}" data-tooltip="${c}（無此色）"><span class="swatch"></span></div>`;
+          vhtml += `<div class="v disabled ${isDim}" data-tooltip="${lang === 'ja' ? DATA.colors_ja[ci] : COLORS[ci]}（無此色）"><span class="swatch"></span></div>`;
         } else {
           const got = isCollected(it.code, ci);
           if (isLabeled) {
             const styleStr = got
               ? `style="border-color:var(--c-${c});background:color-mix(in srgb, var(--c-${c}) 14%, var(--bg))"`
               : '';
-            vhtml += `<div class="v labeled ${got?'collected':''} ${isDim}" data-code="${it.code}" data-ci="${ci}" data-tooltip="${c}" ${styleStr}>${label?formatDotLabel(label):''}</div>`;
+            vhtml += `<div class="v labeled ${got?'collected':''} ${isDim}" data-code="${it.code}" data-ci="${ci}" data-tooltip="${lang === 'ja' ? DATA.colors_ja[ci] : COLORS[ci]}" ${styleStr}>${label?formatDotLabel(label):''}</div>`;
           } else {
-            vhtml += `<div class="v ${got?'collected':''} ${isDim}" data-code="${it.code}" data-ci="${ci}" data-tooltip="${c}"><span class="swatch" style="background:var(--c-${c})"></span></div>`;
+            vhtml += `<div class="v ${got?'collected':''} ${isDim}" data-code="${it.code}" data-ci="${ci}" data-tooltip="${lang === 'ja' ? DATA.colors_ja[ci] : COLORS[ci]}"><span class="swatch" style="background:var(--c-${c})"></span></div>`;
           }
         }
       });
@@ -1548,10 +1549,10 @@ function renderGroup(g){
             }
           }
           if (!ex) {
-            rvhtml += `<div class="v disabled ${isDim}" data-tooltip="${c}（無此色）"><span class="swatch"></span></div>`;
+            rvhtml += `<div class="v disabled ${isDim}" data-tooltip="${lang === 'ja' ? DATA.colors_ja[ci] : COLORS[ci]}（無此色）"><span class="swatch"></span></div>`;
           } else {
             const got = isCollected(rare.code, ci);
-            rvhtml += `<div class="v ${got?'collected':''} ${isDim}" data-code="${rare.code}" data-ci="${ci}" data-tooltip="${c}"><span class="swatch" style="background:var(--c-${c})"></span></div>`;
+            rvhtml += `<div class="v ${got?'collected':''} ${isDim}" data-code="${rare.code}" data-ci="${ci}" data-tooltip="${lang === 'ja' ? DATA.colors_ja[ci] : COLORS[ci]}"><span class="swatch" style="background:var(--c-${c})"></span></div>`;
           }
         });
         if (filterColor && !normalHasMatch && rareHasMatch) {
@@ -1583,7 +1584,7 @@ function renderGroup(g){
         </div>
         ${getItemName(it).startsWith('運勢')?`<div class="region-tag-row"><span class="region-tag">日本限定</span></div>`:''}
         ${it.note?`<div class="item-note">${it.note}</div>`:''}
-        ${it.location?`<div class="item-location">${it.location}</div>`:''}
+        ${getItemLocation(it)?`<div class="item-location">${getItemLocation(it)}</div>`:''}
         <div class="variants">${vhtml}</div>
         ${rareHtml}
       </div>`;
@@ -1913,11 +1914,11 @@ $('exportCsv').onclick = async () => {
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet('Pikmin');
   
-  sheet.addRow(['代碼', '名稱', '日文名稱', '備註', '地點', '1R', '2Y', '3B', '4W', '5Pu', '6G', '7Pi', '8Cy']);
-  sheet.addRow(['', '', '', '', '', '紅', '黃', '藍', '白', '紫', '岩', '粉', '冰']);
+  sheet.addRow(['代碼', '名稱', '日文名稱', '備註', '地點', '日文地點', '1R', '2Y', '3B', '4W', '5Pu', '6G', '7Pi', '8Cy']);
+  sheet.addRow(['', '', '', '', '', '', '紅', '黃', '藍', '白', '紫', '岩', '粉', '冰']);
   
   allItems().forEach(it => {
-    const rowValues = [it.code, it.name, it.name_ja || '', it.note || '', it.location || ''];
+    const rowValues = [it.code, it.name, it.name_ja || '', it.note || '', it.location || '', it.location_ja || ''];
     it.variants.forEach((ex, ci) => {
       if (!ex) {
         rowValues.push('');
@@ -1929,7 +1930,7 @@ $('exportCsv').onclick = async () => {
     
     it.variants.forEach((ex, ci) => {
       if (ex && isCollected(it.code, ci)) {
-        const cell = row.getCell(5 + ci);
+        const cell = row.getCell(6 + ci);
         cell.fill = {
           type: 'pattern',
           pattern: 'solid',
@@ -1979,10 +1980,15 @@ $('importCsvFile').onchange = async (e) => {
       
       let colOffset = 0;
       let hasNameJa = false;
+      let hasLocationJa = false;
       const headerRow = sheet.getRow(1);
       if (headerRow.getCell(3).text?.trim() === '日文名稱') {
         colOffset = 1;
         hasNameJa = true;
+      }
+      if (headerRow.getCell(6).text?.trim() === '日文地點') {
+        colOffset = 2;
+        hasLocationJa = true;
       }
       
       sheet.eachRow((row, rowNumber) => {
@@ -1991,14 +1997,15 @@ $('importCsvFile').onchange = async (e) => {
         const code = row.getCell(1).text?.trim();
         const name = row.getCell(2).text?.trim();
         const name_ja = hasNameJa ? (row.getCell(3).text?.trim() || '') : '';
-        const note = row.getCell(3 + colOffset).text?.trim() || '';
-        const location = row.getCell(4 + colOffset).text?.trim() || '';
+        const note = row.getCell(hasNameJa ? 4 : 3).text?.trim() || '';
+        const location = row.getCell(hasNameJa ? 5 : 4).text?.trim() || '';
+        const location_ja = hasLocationJa ? (row.getCell(6).text?.trim() || '') : '';
         
         if (!code || !name) return;
         
         const variants = [];
         for (let c = 0; c < 8; c++) {
-          const cell = row.getCell(5 + colOffset + c);
+          const cell = row.getCell((hasLocationJa ? 7 : (hasNameJa ? 6 : 5)) + c);
           const v = cell.text?.trim() || '';
           
           if (!v) {
