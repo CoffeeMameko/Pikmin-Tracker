@@ -50,7 +50,7 @@ h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:
 .digit-stack > span{display:block;line-height:1em;height:1em;font-variant-numeric:tabular-nums}
 .overall .total{color:var(--muted);font-size:15px}
 .overall .pct{margin-left:auto;font-size:14px;color:var(--ink-soft);font-feature-settings:"tnum"}
-.bar{height:16px;background:var(--line);border-radius:8px;display:flex;margin-bottom:4px;box-shadow:inset 0 1px 3px rgba(0,0,0,0.1)}
+.bar{height:16px;background:var(--line);border-radius:8px;display:flex;margin-bottom:4px;box-shadow:inset 0 1px 3px rgba(0,0,0,0.1);border:1px solid rgba(0,0,0,0.08)}
 .bar-segment{
   height:100%;
   transition:width 1.5s cubic-bezier(.16,1,.3,1), border-right-width 1.5s, border-radius 1.5s;
@@ -517,6 +517,7 @@ body:has(.modal:not([hidden])){overflow:hidden}
 :root.dark .menu-popup .btn-link:hover{background:rgba(255,255,255,.06)}
 :root.dark .v.labeled{color:#5a6172}
 :root.dark .region-tag{background:#a83838}
+:root.dark .bar{border-color:transparent}
 
 .theme-transitioning *{
   transition:background-color .4s ease, border-color .4s ease, color .4s ease !important;
