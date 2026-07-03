@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pikmin Bloom 裝飾收集</title>
+<title>Pikmin Bloom 圖鑑</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;700&display=swap" rel="stylesheet">
@@ -50,17 +50,16 @@ h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:
 .digit-stack > span{display:block;line-height:1em;height:1em;font-variant-numeric:tabular-nums}
 .overall .total{color:var(--muted);font-size:15px}
 .overall .pct{margin-left:auto;font-size:14px;color:var(--ink-soft);font-feature-settings:"tnum"}
-.bar{height:4px;background:var(--line);border-radius:2px;display:flex}
+.bar{height:16px;background:var(--line);border-radius:8px;display:flex;margin-bottom:4px;box-shadow:inset 0 1px 3px rgba(0,0,0,0.1)}
 .bar-segment{
   height:100%;
-  transition:width 1.5s cubic-bezier(.16,1,.3,1), border-right-width 1.5s;
+  transition:width 1.5s cubic-bezier(.16,1,.3,1), border-right-width 1.5s, border-radius 1.5s;
   width:0%;
   box-sizing:border-box;
   border-right:0px solid var(--bg);
   position:relative;
 }
-.bar-segment:first-child { border-top-left-radius: 2px; border-bottom-left-radius: 2px; }
-.bar-segment:last-child { border-top-right-radius: 2px; border-bottom-right-radius: 2px; }
+
 .bar-segment::before {
   content: '';
   position: absolute;
@@ -70,7 +69,7 @@ h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:
 .bar-segment::after {
   content: attr(data-color);
   position: absolute;
-  bottom: 12px; left: 50%; transform: translateX(-50%);
+  bottom: 24px; left: 50%; transform: translateX(-50%);
   background: var(--ink); color: var(--bg);
   padding: 2px 6px; border-radius: 4px; font-size: 11px;
   opacity: 0; pointer-events: none; transition: opacity 0.2s;
@@ -273,6 +272,7 @@ body.edit-mode #openEdit{color:var(--ink);font-weight:600}
 .add-item .label{font-size:14px}
 .progress-frame{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1;overflow:visible;transform:translateZ(0)}
 .progress-frame rect{fill:none;stroke:var(--frame-norm);stroke-width:2;
+  x: 1px; y: 1px; width: calc(100% - 2px); height: calc(100% - 2px);
   transition:stroke-dashoffset .4s ease}
 .rare-inner .progress-frame rect{stroke:var(--rare)}
 .rare-inner{position:relative}
@@ -739,18 +739,18 @@ body:has(.modal:not([hidden])){overflow:hidden}
   </svg>
 </button>
 <div class="menu-popup" id="menuPopup" hidden>
-  <button class="btn-link" id="openEdit">編輯</button>
-  <button class="btn-link" id="exportData">匯出 JSON</button>
-  <button class="btn-link" id="importData">匯入 JSON</button>
-  <button class="btn-link" id="exportCsv">匯出 Excel</button>
-  <button class="btn-link" id="importCsv">匯入 Excel</button>
-  <button class="btn-link" id="reset">清除全部</button>
+  <button class="btn-link" id="openEdit" data-i18n="btnEditMode">編輯</button>
+  <button class="btn-link" id="exportData" data-i18n="exportJson">匯出 JSON</button>
+  <button class="btn-link" id="importData" data-i18n="importJson">匯入 JSON</button>
+  <button class="btn-link" id="exportCsv" data-i18n="exportCsv">匯出 Excel</button>
+  <button class="btn-link" id="importCsv" data-i18n="importCsv">匯入 Excel</button>
+  <button class="btn-link" id="reset" data-i18n="clearAll">清除全部</button>
 </div>
 <input type="file" id="importFile" accept=".json,application/json" style="display:none">
 <input type="file" id="importCsvFile" accept=".csv" style="display:none">
 
-<script src="i18n.js"></script>
-<script src="data.js"></script>
+<script src="i18n.js?v=3"></script>
+<script src="data.js?v=2"></script>
 <script src="zhuyin_mapping.js"></script>
 <script>
 const COLORS = DATA.colors;
@@ -793,7 +793,13 @@ let editingCode = null;
 const allItems = () => {
   const merged = ITEMS.map(it => {
     const o = overrides[it.code];
-    return o ? {...it, ...o} : it;
+    if (o) {
+      const copy = {...it, ...o};
+      if (o.name_ja === '' && it.name_ja) copy.name_ja = it.name_ja;
+      if (o.location_ja === '' && it.location_ja) copy.location_ja = it.location_ja;
+      return copy;
+    }
+    return it;
   });
   return [...merged, ...customItems];
 };
@@ -949,16 +955,16 @@ function toggle(code, ci){
 }
 
 function buildFilters(){
-  const cats = [{k:'all',label:'全部'},{k:'N',label:'常駐'},{k:'L',label:'限定'}];
+  const cats = [{k:'all', label:'全部', i18n:'chipAll'},{k:'N', label:'常駐', i18n:'chipRegular'},{k:'L', label:'限定', i18n:'chipSpecial'}];
   let html = '';
   cats.forEach(c => {
-    html += `<button class="chip ${filterCat===c.k?'active':''}" data-cat="${c.k}">${c.label}</button>`;
+    html += `<button class="chip ${filterCat===c.k?'active':''}" data-cat="${c.k}" data-i18n="${c.i18n}">${c.label}</button>`;
   });
   html += '<span style="display:inline-block;width:1px;background:var(--line);margin:4px 8px;align-self:stretch"></span>';
   
-  const stats = [{k:'collected',label:'已收集'}, {k:'uncollected',label:'未收集'}];
+  const stats = [{k:'collected', label:'已收集', i18n:'chipCollected'}, {k:'uncollected', label:'未收集', i18n:'chipUncollected'}];
   stats.forEach(s => {
-    html += `<button class="chip ${filterStatus===s.k?'active':''}" data-status="${s.k}">${s.label}</button>`;
+    html += `<button class="chip ${filterStatus===s.k?'active':''}" data-status="${s.k}" data-i18n="${s.i18n}">${s.label}</button>`;
   });
   
   const f = $('filters');
@@ -1163,15 +1169,20 @@ function renderHeader(){
 
     setTimeout(() => {
       const segEls = bar.querySelectorAll('.bar-segment');
+      let firstVisible = -1;
       let lastVisible = -1;
-      for (let i = segments.length - 1; i >= 0; i--) {
-        if (segments[i].pct > 0) { lastVisible = i; break; }
-      }
+      for (let i = 0; i < segments.length; i++) { if (segments[i].pct > 0) { firstVisible = i; break; } }
+      for (let i = segments.length - 1; i >= 0; i--) { if (segments[i].pct > 0) { lastVisible = i; break; } }
       segments.forEach((seg, i) => {
         if (segEls[i]) {
           segEls[i].style.width = seg.pct + '%';
           segEls[i].style.borderRightWidth = (seg.pct > 0 && i !== lastVisible) ? '2px' : '0px';
-          segEls[i].dataset.color = seg.name;
+          let r = '0px';
+          if (i === firstVisible && i === lastVisible) r = '8px';
+          else if (i === firstVisible) r = '8px 0 0 8px';
+          else if (i === lastVisible) r = '0 8px 8px 0';
+          segEls[i].style.borderRadius = r;
+          segEls[i].dataset.color = lang === 'ja' ? DATA.colors_ja[i] : seg.name;
           segEls[i].style.cursor = 'pointer';
           segEls[i].onclick = () => {
             if (filterColor === seg.name) filterColor = null;
@@ -1194,16 +1205,21 @@ function renderHeader(){
       void bar.offsetWidth;
       currentSegments = bar.querySelectorAll('.bar-segment');
     }
+    let firstVisible = -1;
     let lastVisible = -1;
-    for (let i = segments.length - 1; i >= 0; i--) {
-      if (segments[i].pct > 0) { lastVisible = i; break; }
-    }
+    for (let i = 0; i < segments.length; i++) { if (segments[i].pct > 0) { firstVisible = i; break; } }
+    for (let i = segments.length - 1; i >= 0; i--) { if (segments[i].pct > 0) { lastVisible = i; break; } }
     segments.forEach((seg, i) => {
       if (currentSegments[i]) {
         currentSegments[i].style.background = seg.color;
         currentSegments[i].style.width = seg.pct + '%';
         currentSegments[i].style.borderRightWidth = (seg.pct > 0 && i !== lastVisible) ? '2px' : '0px';
-        currentSegments[i].dataset.color = seg.name;
+        let r = '0px';
+        if (i === firstVisible && i === lastVisible) r = '8px';
+        else if (i === firstVisible) r = '8px 0 0 8px';
+        else if (i === lastVisible) r = '0 8px 8px 0';
+        currentSegments[i].style.borderRadius = r;
+        currentSegments[i].dataset.color = lang === 'ja' ? DATA.colors_ja[i] : seg.name;
         currentSegments[i].style.cursor = 'pointer';
         currentSegments[i].onclick = () => {
           if (filterColor === seg.name) filterColor = null;
@@ -1303,7 +1319,14 @@ function renderList(){
     });
   });
 
-  const titles = {N:'常駐', L:'限定'};
+  const titles = {
+    N: lang === 'ja' ? '通常' : '常駐',
+    L: lang === 'ja' ? '限定' : '限定'
+  };
+  const addLabels = {
+    N: lang === 'ja' ? '通常シリーズを追加' : '新增常駐系列',
+    L: lang === 'ja' ? '限定シリーズを追加' : '新增限定系列'
+  };
 
 function renderGroup(g){
     const list = groups[g];
@@ -1319,7 +1342,7 @@ function renderGroup(g){
       </div>`;
     html += `<button class="add-item" data-add-prefix="${g}">
         <span class="plus">＋</span>
-        <span class="label">新增${titles[g]}系列</span>
+        <span class="label">${addLabels[g]}</span>
     </button>`;
     if (!list.length) { html += '<div class="empty">—</div>'; return html; }
     list.forEach(it => {
@@ -1391,7 +1414,7 @@ function renderGroup(g){
         <svg class="progress-frame">
             <rect x="0" y="0" width="100%" height="100%" rx="10" ry="10" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${rOffset}" data-progress-for="${rare.code}"></rect>
         </svg>
-          <div class="rare-label"><span>稀有 · ${rare.code} · <span data-progress-text="${rare.code}">${rGot}／${rTotal}</span></span><button class="edit-item" data-edit="${rare.code}">編輯</button></div>
+          <div class="rare-label"><span>${lang === 'ja' ? 'レア' : '稀有'} · ${rare.code} · <span data-progress-text="${rare.code}">${rGot}／${rTotal}</span></span><button class="edit-item" data-edit="${rare.code}">${lang === 'ja' ? '編集' : '編輯'}</button></div>
           <div class="variants">${rvhtml}</div>
         </div></div>`;
       }
@@ -1405,9 +1428,9 @@ function renderGroup(g){
         <div class="item-head">
           <span class="item-code">${it.code}</span>
           <span class="item-name">${getItemName(it)}</span>
-          ${rare?`<button class="rare-toggle" data-toggle="${it.code}"><span>稀有</span><span class="arrow">▸</span></button>`:''}
+          ${rare?`<button class="rare-toggle" data-toggle="${it.code}"><span>${lang === 'ja' ? 'レア' : '稀有'}</span><span class="arrow">▸</span></button>`:''}
           <span class="item-progress" data-progress-text="${it.code}">${gotV}／${totalV}</span>
-          <button class="edit-item" data-edit="${it.code}">編輯</button>
+          <button class="edit-item" data-edit="${it.code}">${lang === 'ja' ? '編集' : '編輯'}</button>
         </div>
         ${getItemName(it).startsWith('運勢')?`<div class="region-tag-row"><span class="region-tag">日本限定</span></div>`:''}
         ${it.note?`<div class="item-note">${it.note}</div>`:''}
@@ -1757,7 +1780,7 @@ $('exportCsv').onclick = async () => {
     
     it.variants.forEach((ex, ci) => {
       if (ex && isCollected(it.code, ci)) {
-        const cell = row.getCell(6 + ci);
+        const cell = row.getCell(7 + ci);
         cell.fill = {
           type: 'pattern',
           pattern: 'solid',
