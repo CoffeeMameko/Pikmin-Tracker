@@ -869,10 +869,19 @@ const dotLabelsMap = {
   'L50': ['8♦','9♦','10♦','J♦', null,'K♦','Q♦', null],
   'L51': [null,null,null,null,'JKR', null,null, null]
 };
+const eventCatMap = {
+  'L01': '特別なイベント', 'L26': '特別なイベント', 'L67': '特別なイベント',
+  'L47': '世界のあそび', 'L48': '世界のあそび', 'L49': '世界のあそび', 'L50': '世界のあそび', 'L51': '世界のあそび', 'L62': '世界のあそび', 'L78': '世界のあそび',
+  'L61': '世界のグルメ', 'L73': '世界のグルメ',
+  'L76': '世界のおまつり'
+};
 ITEMS.forEach(it => {
   if (dotLabelsMap[it.code]) {
     it.dotLabels = dotLabelsMap[it.code];
     it.note = '';
+  }
+  if (eventCatMap[it.code]) {
+    it.event = eventCatMap[it.code];
   }
 });
 const STORAGE_KEY = 'pikmin_bloom_collected_v1';
