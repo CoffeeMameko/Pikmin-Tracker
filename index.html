@@ -37,12 +37,26 @@ body{
   min-height:100vh;
 }
 .wrap{max-width:1080px;margin:0 auto;padding:0 32px}
-header{padding:32px 0 20px}
-h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:var(--ink);white-space:nowrap;flex-shrink:0}
-.header-top{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:28px;flex-wrap:nowrap}
-.header-top h1{margin-bottom:0}
-.header-top .search{flex:0 0 240px;min-width:240px}
-.header-top .search input{width:100%}
+h1{font-size:36px;font-weight:700;letter-spacing:.08em;color:var(--ink);white-space:nowrap;flex-shrink:0;margin:0;transition:font-size .4s ease}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:16px;flex-wrap:nowrap;transition:margin-bottom .4s ease}
+
+.search-module{position:relative;display:flex;align-items:center;justify-content:center}
+.search-trigger{flex-shrink:0}
+.search-bar{
+  position:absolute;right:0;
+  width:0;opacity:0;pointer-events:none;overflow:hidden;
+  display:flex;align-items:center;gap:6px;
+  background:transparent;border-bottom:1px solid var(--ink);
+  transition:width 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.2s;
+  height:36px;padding:0;
+}
+.search-module.active .search-bar{
+  width:260px;opacity:1;pointer-events:auto;padding:0 8px;
+}
+.search-module.active .search-trigger{opacity:0;pointer-events:none;}
+.search-bar input{flex:1;min-width:0;border:none;background:transparent;outline:none;font-size:15px;color:var(--ink);font-family:inherit}
+.search-clear{background:none;border:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:4px;border-radius:50%;transition:color .2s, background .2s}
+.search-clear:hover{background:rgba(42,53,69,.05);color:var(--ink)}
 .overall{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
 .overall .num{font-size:32px;font-weight:400;color:var(--ink);letter-spacing:.02em}
 .digit-slot{display:inline-block;overflow:hidden;height:1em;line-height:1em;vertical-align:baseline}
@@ -98,7 +112,7 @@ h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:
 .cs .val{color:var(--muted)}
 
 .controls{
-  padding:8px 0 16px;
+  padding:32px 0 16px;
   position:sticky;top:0;
   background:var(--bg);
   z-index:99;
@@ -106,30 +120,56 @@ h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:
   transition:background .4s ease, padding .4s ease;
 }
 .controls.scrolled{
-  background:rgba(250,250,247,.7);
-  backdrop-filter:blur(24px) saturate(1.2);
-  -webkit-backdrop-filter:blur(24px) saturate(1.2);
-  mask-image:linear-gradient(to bottom, black 0%, black calc(100% - 32px), transparent 100%);
-  -webkit-mask-image:linear-gradient(to bottom, black 0%, black calc(100% - 32px), transparent 100%);
-  padding:10px 16px 36px;
+  background:transparent;
+  padding:10px 16px 20px;
+  pointer-events:none;
 }
+.controls.scrolled > * { pointer-events:auto; }
+.controls.scrolled h1{font-size:20px}
+.controls.scrolled .header-top{margin-bottom:6px}
 .controls .wrap{
   transition:background .5s ease, border-radius .5s ease, box-shadow .5s ease, padding .5s ease;
   will-change:background-color, border-radius, box-shadow;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.controls-main{
+  flex: 1;
+  min-width: 0;
+}
+.controls-tools{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-left: auto;
+}
+.controls-tools .icon-btn{
+  padding: 4px;
 }
 .controls.scrolled .wrap{
-  background:rgba(255,255,255,.55);
-  border-radius:16px;
-  padding:16px 28px;
-  box-shadow:0 4px 28px rgba(0,0,0,.06);
+  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.2) 100%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius:20px;
+  padding:16px 24px;
+  box-shadow: 
+    0 8px 32px rgba(0,0,0,0.1),
+    inset 0 2px 4px rgba(255,255,255,0.8),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
 }
 
 :root.dark .controls.scrolled{
-  background:rgba(28,33,41,.7);
+  background:transparent;
 }
 :root.dark .controls.scrolled .wrap{
-  background:rgba(255,255,255,.05);
-  box-shadow:0 4px 28px rgba(0,0,0,.3);
+  border: 1px solid rgba(255,255,255,0.1);
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
+  box-shadow: 
+    0 8px 32px rgba(0,0,0,0.4),
+    inset 0 2px 4px rgba(255,255,255,0.2),
+    inset 0 -2px 4px rgba(0,0,0,0.2);
 }
 
 .filters{display:flex;gap:4px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;padding:12px 0 10px;margin:0 -20px;padding-left:20px;padding-right:20px}
@@ -261,15 +301,55 @@ h1{font-size:36px;font-weight:700;letter-spacing:.08em;margin-bottom:28px;color:
 .edit-item:hover{color:var(--ink)}
 #extraActions{margin-top:14px;display:flex;gap:16px;align-items:center}
 .edit-item{display:none}
+.suggestions-container{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.suggestion-btn{padding:6px 12px;border:1px solid var(--line);background:transparent;cursor:pointer;font-family:inherit;font-size:13px;color:var(--muted);transition:all .15s;display:flex;align-items:center;gap:6px;border-radius:0}
+.suggestion-btn:hover{color:var(--ink);border-color:var(--ink)}
+.suggestion-num{display:flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--line);color:var(--bg);font-size:10px;font-weight:bold;font-family:sans-serif;}
+
 body.edit-mode .edit-item{display:inline-block}
 body.edit-mode #openEdit{color:var(--ink);font-weight:600}
-.add-item{padding:16px 0;border-bottom:1px solid var(--line-soft);
-  display:flex;align-items:center;gap:12px;cursor:pointer;color:var(--muted);
-  transition:color .15s;background:none;border-left:none;border-right:none;border-top:none;
-  width:100%;text-align:left;font-family:inherit;letter-spacing:.05em}
-.add-item:hover{color:var(--ink)}
-.add-item .plus{font-size:18px;min-width:32px;font-weight:300}
-.add-item .label{font-size:14px}
+.add-fab, .menu-fab {
+  position:fixed; right:20px; width:48px; height:48px;
+  border-radius:50%; 
+  border: 1px solid rgba(255,255,255,0.3);
+  background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.1) 100%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(160%);
+  color: var(--ink); cursor:pointer;
+  box-shadow: 
+    0 8px 32px rgba(0,0,0,0.15),
+    inset 0 2px 4px rgba(255,255,255,0.8),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+  transition:all .2s cubic-bezier(0.4, 0, 0.2, 1);
+  display:flex; align-items:center; justify-content:center; z-index:999;
+}
+.add-fab { bottom: 78px; }
+.menu-fab { bottom: 20px; z-index:1000; }
+.add-fab:hover, .menu-fab:hover {
+  transform:translateY(-2px);
+  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.2) 100%);
+  box-shadow: 
+    0 12px 36px rgba(0,0,0,0.2),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+}
+:root.dark .add-fab, :root.dark .menu-fab {
+  border-color: rgba(255,255,255,0.1);
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
+  color: rgba(255,255,255,0.9);
+  box-shadow: 
+    0 8px 32px rgba(0,0,0,0.4),
+    inset 0 2px 4px rgba(255,255,255,0.2),
+    inset 0 -2px 4px rgba(0,0,0,0.2);
+}
+:root.dark .add-fab:hover, :root.dark .menu-fab:hover {
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 100%);
+  box-shadow: 
+    0 12px 36px rgba(0,0,0,0.5),
+    inset 0 2px 4px rgba(255,255,255,0.3),
+    inset 0 -2px 4px rgba(0,0,0,0.2);
+}
+.add-fab svg { width:24px; height:24px; }
 .progress-frame{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1;overflow:visible;transform:translateZ(0)}
 .progress-frame rect{fill:none;stroke:var(--frame-norm);stroke-width:2;
   x: 1px; y: 1px; width: calc(100% - 2px); height: calc(100% - 2px);
@@ -393,27 +473,16 @@ body:has(.modal:not([hidden])){overflow:hidden}
 #editModal[hidden] .modal-inner{
   transform:translateY(-16px);
 }
-.menu-fab{
-  position:fixed;bottom:20px;right:20px;z-index:1000;
-  background:var(--ink);color:#fff;border:none;
-  border-radius:8px;padding:10px;
-  cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.15);
-  transition:transform .15s, box-shadow .15s;
-  display:flex;align-items:center;justify-content:center;
-  width:44px;height:44px;
-}
-.menu-fab:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.2)}
 .menu-fab svg{
   position:absolute;
   top:50%;left:50%;
-  width:20px;height:20px;
+  width:22px;height:22px;
   transition:opacity .2s ease, transform .2s ease;
 }
 .menu-fab .icon-disk{transform:translate(-50%,-50%) scale(1);opacity:1}
 .menu-fab .icon-close{transform:translate(-50%,-50%) scale(.7);opacity:0}
 .menu-fab.open .icon-disk{transform:translate(-50%,-50%) scale(.7);opacity:0}
 .menu-fab.open .icon-close{transform:translate(-50%,-50%) scale(1);opacity:1}
-.menu-fab:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.2)}
 
 .menu-popup{
   position:fixed;bottom:70px;right:20px;z-index:1000;
@@ -451,12 +520,11 @@ body:has(.modal:not([hidden])){overflow:hidden}
 .v.labeled .lbl-mix{font-size:11px;font-family:"Source Serif Pro",Georgia,serif;line-height:1;letter-spacing:.02em}
 @media (max-width:680px){
   .wrap{padding:0 20px}
-  header{padding:20px 0 12px}
+  .controls{padding:20px 0 12px}
   h1{font-size:22px;letter-spacing:.06em}
+  .controls.scrolled h1{font-size:15px}
   .header-top{flex-wrap:wrap;gap:12px;margin-bottom:16px}
   .header-top h1{margin-bottom:0}
-  .header-top .search{flex:1 1 100%;order:3}
-  .header-top .search input{width:100%}
   .overall .num{font-size:24px}
   .overall .pct{font-size:13px}
   .color-stats{grid-template-columns:repeat(2,max-content);justify-content:space-between;gap:8px 14px}
@@ -478,15 +546,32 @@ body:has(.modal:not([hidden])){overflow:hidden}
   padding:6px;border-radius:6px;
   transition:color .15s, background .15s;
   position:relative;
+  font-family:inherit;
 }
 .icon-btn:hover{color:var(--ink);background:rgba(42,53,69,.05)}
 .icon-btn svg{display:block}
+.icon-btn[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: calc(100% + 4px); top: 50%; transform: translate(4px, -50%);
+  background: var(--ink); color: var(--bg);
+  padding: 4px 8px; border-radius: 6px; font-size: 11px;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s;
+  white-space: nowrap; z-index: 20; letter-spacing: 0.05em; font-weight: normal; font-family: inherit;
+}
+.icon-btn:hover::after { opacity: 1; transform: translate(0, -50%); }
 
-#toggleDark{position:relative;width:32px;height:32px}
-#toggleDark svg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(1);transition:opacity .2s, transform .2s}
-#toggleDark .icon-moon{opacity:0;transform:translate(-50%,-50%) scale(.7)}
-:root.dark #toggleDark .icon-sun{opacity:0;transform:translate(-50%,-50%) scale(.7)}
-:root.dark #toggleDark .icon-moon{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.top-actions .icon-btn[data-tooltip]::after {
+  right: auto; left: 50%; top: calc(100% + 4px); bottom: auto; transform: translate(-50%, -4px);
+}
+.top-actions .icon-btn:hover::after { transform: translate(-50%, 0); }
+
+
+#toggleDark, #floatDark{position:relative;width:32px;height:32px}
+#toggleDark svg, #floatDark svg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(1);transition:opacity .2s, transform .2s}
+#toggleDark .icon-moon, #floatDark .icon-moon{opacity:0;transform:translate(-50%,-50%) scale(.7)}
+:root.dark #toggleDark .icon-sun, :root.dark #floatDark .icon-sun{opacity:0;transform:translate(-50%,-50%) scale(.7)}
+:root.dark #toggleDark .icon-moon, :root.dark #floatDark .icon-moon{opacity:1;transform:translate(-50%,-50%) scale(1)}
 
 /* === 深色模式 === */
 :root.dark{
@@ -503,7 +588,7 @@ body:has(.modal:not([hidden])){overflow:hidden}
   --glow-rare-dim: rgba(255, 223, 112, 0.3);
   --frame-norm: var(--muted);
 }
-:root.dark .menu-fab{background:var(--ink);color:var(--bg)}
+
 :root.dark .btn-primary{background:var(--ink);color:var(--bg)}
 :root.dark .pfx.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 :root.dark .icon-btn:hover{background:rgba(255,255,255,.06)}
@@ -517,6 +602,8 @@ body:has(.modal:not([hidden])){overflow:hidden}
 :root.dark .menu-popup .btn-link:hover{background:rgba(255,255,255,.06)}
 :root.dark .v.labeled{color:#5a6172}
 :root.dark .region-tag{background:#a83838}
+.region-tag.golden{background:#cba83b;color:#1c2129}
+:root.dark .region-tag.golden{background:#d4b553;color:#1c2129}
 :root.dark .bar{border-color:transparent}
 
 .theme-transitioning *{
@@ -527,42 +614,60 @@ body:has(.modal:not([hidden])){overflow:hidden}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 </head>
 <body>
-<div class="wrap">
-<header>
-  <div class="header-top">
-    <h1 data-i18n="title">Pikmin Bloom 裝飾收集</h1>
-    <div class="search">
-      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="7"/>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input type="text" id="search" data-i18n-placeholder="search" placeholder="搜尋名稱、編號或地點">
-      <button id="clearSearch" class="search-clear" style="display:none" data-i18n-aria="clearSearch" aria-label="清除搜尋">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-      </button>
+<div class="controls">
+  <div class="wrap">
+    <div class="controls-main">
+      <div class="header-top">
+        <h1 data-i18n="title">Pikmin Bloom 圖鑑</h1>
+      </div>
+      <div class="overall">
+        <span class="num" id="collected">0</span>
+        <span class="total">／ <span id="total">0</span></span>
+        <span class="pct" id="pct">0.0%</span>
+      </div>
+      <div class="bar" id="bar"></div>
+      <div class="filters" id="filters"></div>
     </div>
-    <div class="header-tools">
-      <button class="icon-btn" id="openHelp" data-i18n-aria="help" aria-label="說明">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+    <div class="controls-tools always-visible">
+      <div class="search-module" id="searchModule">
+        <button class="icon-btn search-trigger" id="searchTrigger" data-i18n-tooltip="btnSearch" data-tooltip="搜尋" aria-label="搜尋">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+        <div class="search-bar" id="searchBar">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <circle cx="11" cy="11" r="7"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" id="search" data-i18n-placeholder="search" placeholder="搜尋名稱、編號或地點">
+          <button id="clearSearch" class="search-clear" style="display:none" data-i18n-aria="clearSearch" aria-label="清除搜尋">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+      </div>
+      <button class="icon-btn" id="openHelp" data-i18n-tooltip="help" data-tooltip="說明" data-i18n-aria="help" aria-label="說明">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
           <circle cx="12" cy="12" r="10"/>
           <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/>
           <line x1="12" y1="17" x2="12.01" y2="17"/>
         </svg>
       </button>
-      <button class="icon-btn" id="toggleDark" data-i18n-aria="toggleDark" aria-label="切換深淺模式">
-        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+      <button class="icon-btn" id="toggleDark" data-i18n-tooltip="toggleDark" data-tooltip="切換深淺模式" data-i18n-aria="toggleDark" aria-label="切換深淺模式">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
           <circle cx="12" cy="12" r="4"/>
           <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
           <line x1="4.93" y1="4.93" x2="7.05" y2="7.05"/><line x1="16.95" y1="16.95" x2="19.07" y2="19.07"/>
           <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
           <line x1="4.93" y1="19.07" x2="7.05" y2="16.95"/><line x1="16.95" y1="7.05" x2="19.07" y2="4.93"/>
         </svg>
-        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
       </button>
-      <button class="icon-btn" id="toggleLang" data-i18n-aria="toggleLang" data-i18n-title="toggleLang" aria-label="切換語言" title="切換中/日文">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+      <button class="icon-btn" id="toggleLang" data-i18n-tooltip="toggleLang" data-tooltip="切換中/日文" data-i18n-aria="toggleLang" aria-label="切換語言">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
           <path d="m5 8 6 6"/>
           <path d="m4 14 6-6 2-3"/>
           <path d="M2 5h12"/>
@@ -572,19 +677,6 @@ body:has(.modal:not([hidden])){overflow:hidden}
         </svg>
       </button>
     </div>
-  </div>
-</header>
-</div>
-
-<div class="controls">
-  <div class="wrap">
-    <div class="overall">
-      <span class="num" id="collected">0</span>
-      <span class="total">／ <span id="total">0</span></span>
-      <span class="pct" id="pct">0.0%</span>
-    </div>
-    <div class="bar" id="bar"></div>
-    <div class="filters" id="filters"></div>
   </div>
 </div>
 
@@ -616,10 +708,12 @@ body:has(.modal:not([hidden])){overflow:hidden}
     <div class="field">
       <label data-i18n="labelName">名稱</label>
       <input id="newName" data-i18n-placeholder="placeholderName" placeholder="例：夏日扇子">
+      <div id="nameSuggestions" class="suggestions-container"></div>
     </div>
     <div class="field">
       <label data-i18n="labelNameJa">日文名稱(選填)</label>
       <input id="newNameJa" data-i18n-placeholder="placeholderNameJa" placeholder="例：夏の扇子">
+      <div id="nameJaSuggestions" class="suggestions-container"></div>
     </div>
     <div class="field">
       <label data-i18n="labelNote">備註(可留空)</label>
@@ -628,18 +722,19 @@ body:has(.modal:not([hidden])){overflow:hidden}
     <div class="field">
       <label data-i18n="labelLocation">地點(可留空)</label>
       <input id="newLocation" data-i18n-placeholder="placeholderLocation" placeholder="例：餐廳、咖啡廳">
+      <input id="newLocationJa" style="display:none;">
+      <div id="locationSuggestions" class="suggestions-container"></div>
+    </div>
+    <div class="field" id="eventField" style="display:none">
+      <label data-i18n="labelEvent">特殊活動分類(僅限限定系列)</label>
+      <div class="color-toggle" id="eventToggle"></div>
     </div>
     <div class="field">
       <label data-i18n="labelColor">顏色(點擊切換是否存在)</label>
       <div class="color-toggle" id="colorToggle"></div>
     </div>
-    <button class="btn-primary" id="saveNew" data-i18n="saveNew">新增系列</button>
+    <button class="btn-primary" id="saveNew" data-i18n="confirm">確定</button>
     <div id="extraActions"></div>
-
-    <div id="customSection">
-      <h3 class="custom-title" data-i18n="customTitle">已新增的系列</h3>
-      <ul class="custom-list" id="customList"></ul>
-    </div>
   </div>
 </div>
 
@@ -728,6 +823,12 @@ body:has(.modal:not([hidden])){overflow:hidden}
   </div>
 </div>
 
+<button class="add-fab" id="addFab" aria-label="新增系列">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+  </svg>
+</button>
 <button class="menu-fab" id="menuFab" aria-label="選單">
   <svg class="icon-disk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
@@ -748,7 +849,7 @@ body:has(.modal:not([hidden])){overflow:hidden}
   <button class="btn-link" id="reset" data-i18n="clearAll">清除全部</button>
 </div>
 <input type="file" id="importFile" accept=".json,application/json" style="display:none">
-<input type="file" id="importCsvFile" accept=".csv" style="display:none">
+<input type="file" id="importCsvFile" accept=".csv,.xlsx,.xls" style="display:none">
 
 <script src="i18n.js?v=3"></script>
 <script src="data.js?v=2"></script>
@@ -826,9 +927,9 @@ function applyLang() {
     const key = el.getAttribute('data-i18n-aria');
     if (I18N[lang][key]) el.setAttribute('aria-label', I18N[lang][key]);
   });
-  document.querySelectorAll('[data-i18n-title]').forEach(el => {
-    const key = el.getAttribute('data-i18n-title');
-    if (I18N[lang][key]) el.title = I18N[lang][key];
+  document.querySelectorAll('[data-i18n-tooltip]').forEach(el => {
+    const key = el.getAttribute('data-i18n-tooltip');
+    if (I18N[lang][key]) el.setAttribute('data-tooltip', I18N[lang][key]);
   });
 }
 
@@ -1247,7 +1348,7 @@ function renderList(){
     if (q) {
       const qClean = q.replace(/[3467 ]/g, '');
       const dispName = getItemName(it);
-      const isJp = dispName.startsWith('運勢');
+      const isJp = it.name.startsWith('運勢');
       const nameQ = getQwertyPinyin(dispName);
       const locQ = it.location ? getQwertyPinyin(it.location) : '';
       const match = dispName.toLowerCase().includes(q)
@@ -1260,7 +1361,11 @@ function renderList(){
         || locQ.includes(qClean)
         || (it.location && it.location.toLowerCase().includes(q))
         || (isJp && '日本限定'.includes(q))
-        || (isJp && getQwertyPinyin('日本限定').includes(qClean));
+        || (isJp && getQwertyPinyin('日本限定').includes(qClean))
+        || (it.event && it.event.toLowerCase().includes(q))
+        || (it.event && getQwertyPinyin(it.event).includes(qClean))
+        || (it.event && EVENT_MAP_ZH[it.event] && EVENT_MAP_ZH[it.event].includes(q))
+        || (it.event && EVENT_MAP_ZH[it.event] && getQwertyPinyin(EVENT_MAP_ZH[it.event]).includes(qClean));
       if (!match) return false;
     }
     let hasUncollected = false;
@@ -1325,7 +1430,7 @@ function renderList(){
     L: lang === 'ja' ? '限定' : '限定'
   };
   const addLabels = {
-    N: lang === 'ja' ? '通常シリーズを追加' : '新增常駐系列',
+    N: lang === 'ja' ? 'シリーズを追加' : '新增系列',
     L: lang === 'ja' ? '限定シリーズを追加' : '新增限定系列'
   };
 
@@ -1341,10 +1446,6 @@ function renderGroup(g){
         </button>
         ${titles[g]} · ${list.length}
       </div>`;
-    html += `<button class="add-item" data-add-prefix="${g}">
-        <span class="plus">＋</span>
-        <span class="label">${addLabels[g]}</span>
-    </button>`;
     if (!list.length) { html += '<div class="empty">—</div>'; return html; }
     list.forEach(it => {
       const totalV = it.variants.filter(v=>v).length;
@@ -1366,7 +1467,7 @@ function renderGroup(g){
           }
         }
         if (!ex) {
-          vhtml += `<div class="v disabled ${isDim}" data-tooltip="${lang === 'ja' ? DATA.colors_ja[ci] : COLORS[ci]}（無此色）"><span class="swatch"></span></div>`;
+          vhtml += `<div class="v disabled ${isDim}" data-tooltip="${lang === 'ja' ? DATA.colors_ja[ci] : COLORS[ci]}"><span class="swatch"></span></div>`;
         } else {
           const got = isCollected(it.code, ci);
           if (isLabeled) {
@@ -1400,7 +1501,7 @@ function renderGroup(g){
             }
           }
           if (!ex) {
-            rvhtml += `<div class="v disabled ${isDim}" data-tooltip="${lang === 'ja' ? DATA.colors_ja[ci] : COLORS[ci]}（無此色）"><span class="swatch"></span></div>`;
+            rvhtml += `<div class="v disabled ${isDim}" data-tooltip="${lang === 'ja' ? DATA.colors_ja[ci] : COLORS[ci]}"><span class="swatch"></span></div>`;
           } else {
             const got = isCollected(rare.code, ci);
             rvhtml += `<div class="v ${got?'collected':''} ${isDim}" data-code="${rare.code}" data-ci="${ci}" data-tooltip="${lang === 'ja' ? DATA.colors_ja[ci] : COLORS[ci]}"><span class="swatch" style="background:var(--c-${c})"></span></div>`;
@@ -1415,7 +1516,7 @@ function renderGroup(g){
         <svg class="progress-frame">
             <rect x="0" y="0" width="100%" height="100%" rx="10" ry="10" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${rOffset}" data-progress-for="${rare.code}"></rect>
         </svg>
-          <div class="rare-label"><span>${lang === 'ja' ? 'レア' : '稀有'} · ${rare.code} · <span data-progress-text="${rare.code}">${rGot}／${rTotal}</span></span><button class="edit-item" data-edit="${rare.code}">${lang === 'ja' ? '編集' : '編輯'}</button></div>
+          <div class="rare-label"><span>${lang === 'ja' ? 'レア' : '稀有'} · ${rare.code} · <span data-progress-text="${rare.code}">${rGot}／${rTotal}</span></span><button class="edit-item" data-edit="${rare.code}" title="${lang === 'ja' ? '編集' : '編輯'}"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button></div>
           <div class="variants">${rvhtml}</div>
         </div></div>`;
       }
@@ -1431,9 +1532,10 @@ function renderGroup(g){
           <span class="item-name">${getItemName(it)}</span>
           ${rare?`<button class="rare-toggle" data-toggle="${it.code}"><span>${lang === 'ja' ? 'レア' : '稀有'}</span><span class="arrow">▸</span></button>`:''}
           <span class="item-progress" data-progress-text="${it.code}">${gotV}／${totalV}</span>
-          <button class="edit-item" data-edit="${it.code}">${lang === 'ja' ? '編集' : '編輯'}</button>
+          <button class="edit-item" data-edit="${it.code}" title="${lang === 'ja' ? '編集' : '編輯'}"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
         </div>
-        ${getItemName(it).startsWith('運勢')?`<div class="region-tag-row"><span class="region-tag">日本限定</span></div>`:''}
+        ${it.name.startsWith('運勢')?`<div class="region-tag-row"><span class="region-tag">日本限定</span></div>`:''}
+        ${it.event?`<div class="region-tag-row"><span class="region-tag golden">${lang === 'zh' ? (EVENT_MAP_ZH[it.event] || it.event) : it.event}</span></div>`:''}
         ${it.note?`<div class="item-note">${it.note}</div>`:''}
         ${getItemLocation(it)?`<div class="item-location">${getItemLocation(it)}</div>`:''}
         <div class="variants">${vhtml}</div>
@@ -1477,16 +1579,29 @@ function renderGroup(g){
 
 function render(){ buildFilters(); renderHeader(); renderList(); applyLang(); }
 
+$('searchTrigger').addEventListener('click', () => {
+  $('searchModule').classList.add('active');
+  setTimeout(() => $('search').focus(), 100);
+});
+
+$('search').addEventListener('blur', () => {
+  if (!$('search').value.trim()) {
+    setTimeout(() => {
+      if (!$('search').value.trim()) $('searchModule').classList.remove('active');
+    }, 150);
+  }
+});
+
 $('search').addEventListener('input', e => { 
   searchQ = e.target.value; 
   $('clearSearch').style.display = searchQ.length > 0 ? 'flex' : 'none';
-  renderList(); 
+  render();
 });
 $('clearSearch').addEventListener('click', () => {
   $('search').value = '';
   searchQ = '';
   $('clearSearch').style.display = 'none';
-  renderList();
+  render();
   $('search').focus();
 });
 
@@ -1497,6 +1612,29 @@ $('reset').onclick = () => {
 };
 
 let newVariants = [true,true,true,true,true,true,true,true];
+let newEventCat = '';
+const EVENTS = ["特別なイベント", "世界のあそび", "世界のグルメ", "世界のおまつり"];
+const EVENT_MAP_ZH = {
+  "特別なイベント": "特殊活動",
+  "世界のあそび": "世界遊戲",
+  "世界のグルメ": "世界美食",
+  "世界のおまつり": "世界節慶"
+};
+
+function renderEventToggle(){
+  $('eventToggle').innerHTML = EVENTS.map(ev => 
+    `<button type="button" class="ct ${newEventCat === ev ? 'on' : ''}" data-ev="${ev}">
+       ${lang === 'zh' ? EVENT_MAP_ZH[ev] : ev}
+     </button>`
+  ).join('');
+  $('eventToggle').querySelectorAll('.ct').forEach(b => {
+    b.onclick = () => {
+      const ev = b.dataset.ev;
+      newEventCat = newEventCat === ev ? '' : ev;
+      renderEventToggle();
+    };
+  });
+}
 
 function renderColorToggle(){
   $('colorToggle').innerHTML = COLORS.map((c,i)=>
@@ -1507,36 +1645,13 @@ function renderColorToggle(){
   $('colorToggle').querySelectorAll('.ct').forEach(b=>{
     b.onclick = ()=>{
       newVariants[+b.dataset.i] = !newVariants[+b.dataset.i];
+      userEdited.variants = true;
       renderColorToggle();
     };
   });
 }
 
-function renderCustomList(){
-  if (!customItems.length){
-    $('customList').innerHTML = '<li style="color:var(--muted);font-size:13px;border:none">尚無自訂系列</li>';
-    return;
-  }
-  $('customList').innerHTML = customItems.map((it, idx)=>
-    `<li>
-       <span class="code">${it.code}</span>
-       <span class="name">${getItemName(it)}</span>
-       <button class="del" data-idx="${idx}">刪除</button>
-     </li>`
-  ).join('');
-  $('customList').querySelectorAll('.del').forEach(b=>{
-    b.onclick = ()=>{
-      if (!confirm('確定刪除這個系列？已收集的紀錄也會失效。')) return;
-      const removed = customItems[+b.dataset.idx];
-      for (let ci = 0; ci < 8; ci++) delete collected[removed.code + '_' + ci];
-      save();
-      customItems.splice(+b.dataset.idx, 1);
-      saveCustom();
-      renderCustomList();
-      render();
-    };
-  });
-}
+
 
 function formatDotLabel(label){
   if(!label) return '';
@@ -1551,8 +1666,7 @@ function closeEditModal(){
   editingCode = null;
   $('modalTitle').textContent = '新增系列';
   $('codeField').style.display = '';
-  $('customSection').style.display = '';
-  $('saveNew').textContent = '新增系列';
+  $('saveNew').textContent = lang === 'ja' ? '確定' : '確定';
   $('extraActions').innerHTML = '';
 }
 
@@ -1563,20 +1677,22 @@ function openEditFor(code){
   const isCustom = customItems.some(it => it.code === code);
   const hasOverride = !!overrides[code];
 
-  $('modalTitle').textContent = `編輯 ${code}`;
+  $('modalTitle').textContent = (lang === 'ja' ? '編集 ' : '編輯 ') + code;
   $('codeField').style.display = 'none';
-  $('customSection').style.display = 'none';
   $('newName').value = item.name;
   $('newNameJa').value = item.name_ja || '';
   $('newNote').value = item.note || '';
   $('newLocation').value = item.location || '';
+  newEventCat = item.event || '';
+  $('eventField').style.display = code.startsWith('L') ? '' : 'none';
   newVariants = [...item.variants];
   renderColorToggle();
-  $('saveNew').textContent = '儲存變更';
+  renderEventToggle();
+  $('saveNew').textContent = lang === 'ja' ? '変更を保存' : '儲存變更';
 
   let extras = '';
   if (isCustom) {
-    extras = `<button class="btn-link" id="deleteEdit" style="color:#c44">刪除這個系列</button>`;
+    extras = `<button class="btn-link" id="deleteEdit" style="color:#c44">${lang === 'ja' ? 'このシリーズを削除' : '刪除這個系列'}</button>`;
   } else if (hasOverride) {
     extras = `<button class="btn-link" id="resetEdit">重設為原始</button>`;
   }
@@ -1608,26 +1724,159 @@ $('openEdit').onclick = ()=>{
 
 function openNewModal(prefix){
   editingCode = null;
-  $('modalTitle').textContent = '新增系列';
+  $('modalTitle').textContent = lang === 'ja' ? 'シリーズを追加' : '新增系列';
   $('codeField').style.display = '';
-  $('customSection').style.display = '';
   $('newName').value = '';
+  $('nameSuggestions').innerHTML = '';
   $('newNameJa').value = '';
+  $('nameJaSuggestions').innerHTML = '';
   $('newNote').value = '';
   $('newLocation').value = '';
+  $('locationSuggestions').innerHTML = '';
   $('newLocationJa').value = '';
   $('newNum').value = '';
-  $('saveNew').textContent = '新增系列';
+  newEventCat = '';
+  $('eventField').style.display = prefix === 'L' ? '' : 'none';
+  $('saveNew').textContent = lang === 'ja' ? '確定' : '確定';
   $('extraActions').innerHTML = '';
   newVariants = [true,true,true,true,true,true,true,true];
   renderColorToggle();
-  renderCustomList();
+  renderEventToggle();
   // 預選類型
-  if (prefix) {
-    newPrefix = prefix;
-    $('prefixGroup').querySelectorAll('.pfx').forEach(x => x.classList.toggle('active', x.dataset.pfx === prefix));
-  }
+  if (!prefix) prefix = 'N';
+  newPrefix = prefix;
+  $('prefixGroup').querySelectorAll('.pfx').forEach(x => x.classList.toggle('active', x.dataset.pfx === prefix));
+  $('prefixGroup').style.display = 'flex';
+  $('prefixGroup').querySelector('[data-pfx="L"]').style.display = '';
+  resetUserEdited();
+  fillMaxNum();
   $('editModal').hidden = false;
+}
+
+let userEdited = { num: false, name: false, nameJa: false, location: false, variants: false };
+function resetUserEdited() {
+  userEdited = { num: false, name: false, nameJa: false, location: false, variants: false };
+}
+
+$('newNum').addEventListener('input', () => { 
+  userEdited.num = true; 
+  autoFillFromNum();
+});
+function renderSuggestions(matches, containerId) {
+  const container = $(containerId);
+  container.innerHTML = '';
+  if (!matches || matches.length === 0) return;
+  
+  matches.sort((a, b) => {
+    const numA = parseInt(a.code.replace(/\D/g, ''), 10) || 0;
+    const numB = parseInt(b.code.replace(/\D/g, ''), 10) || 0;
+    if (numA !== numB) return numA - numB;
+    return a.code.localeCompare(b.code);
+  });
+  
+  const topMatches = matches.slice(0, 5);
+  topMatches.forEach((match, idx) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'suggestion-btn';
+    btn.innerHTML = `${match.code} ${match.name}`;
+    btn.onclick = () => {
+      userEdited.name = false;
+      userEdited.num = false;
+      userEdited.nameJa = false;
+      userEdited.location = false;
+      userEdited.variants = false;
+      fillDataFromMatch(match);
+      $('nameSuggestions').innerHTML = '';
+      $('nameJaSuggestions').innerHTML = '';
+      $('locationSuggestions').innerHTML = '';
+    };
+    container.appendChild(btn);
+  });
+}
+
+$('newName').addEventListener('input', () => { 
+  userEdited.name = true; 
+  if (editingCode) return;
+  const val = $('newName').value.trim().toLowerCase();
+  $('nameSuggestions').innerHTML = '';
+  if (!val) {
+    if (!userEdited.num) fillMaxNum();
+    return;
+  }
+  const matches = allItems().filter(it => 
+    (it.name && it.name.toLowerCase().includes(val)) || 
+    (it.name_ja && it.name_ja.toLowerCase().includes(val))
+  );
+  renderSuggestions(matches, 'nameSuggestions');
+  if (matches.length === 0 && !userEdited.num) fillMaxNum();
+});
+
+$('newNameJa').addEventListener('input', () => { 
+  userEdited.nameJa = true; 
+  if (editingCode) return;
+  const val = $('newNameJa').value.trim().toLowerCase();
+  $('nameJaSuggestions').innerHTML = '';
+  if (!val) return;
+  const matches = allItems().filter(it => 
+    (it.name_ja && it.name_ja.toLowerCase().includes(val)) ||
+    (it.name && it.name.toLowerCase().includes(val))
+  );
+  renderSuggestions(matches, 'nameJaSuggestions');
+});
+
+$('newLocation').addEventListener('input', () => { 
+  userEdited.location = true; 
+  if (editingCode) return;
+  const val = $('newLocation').value.trim().toLowerCase();
+  $('locationSuggestions').innerHTML = '';
+  if (!val) return;
+  const matches = allItems().filter(it => 
+    (it.location && it.location.toLowerCase().includes(val)) ||
+    (it.location_ja && it.location_ja.toLowerCase().includes(val))
+  );
+  renderSuggestions(matches, 'locationSuggestions');
+});
+
+function autoFillFromNum() {
+  if (editingCode) return;
+  const numVal = parseInt($('newNum').value, 10);
+  if (!isNaN(numVal)) {
+    let match = allItems().find(it => it.code === `N${numVal}`);
+    if (!match) match = allItems().find(it => parseInt(it.code.replace(/\D/g,''), 10) === numVal);
+    if (match) fillDataFromMatch(match);
+  }
+}
+
+function fillDataFromMatch(match) {
+  if (!userEdited.num) {
+    const matchNum = parseInt(match.code.replace(/\D/g, ''), 10);
+    if (!isNaN(matchNum)) $('newNum').value = matchNum;
+  }
+  if (!userEdited.name && match.name) {
+    $('newName').value = match.name;
+  }
+  if (!userEdited.nameJa && match.name_ja) {
+    $('newNameJa').value = match.name_ja;
+  }
+  if (!userEdited.location && match.location) {
+    $('newLocation').value = match.location;
+    if (match.location_ja) $('newLocationJa').value = match.location_ja;
+  }
+  if (!userEdited.variants && match.variants) {
+    newVariants = [...match.variants];
+    renderColorToggle();
+  }
+}
+
+function fillMaxNum() {
+  const itemsWithPfx = allItems().filter(it => it.code.startsWith(newPrefix));
+  let max = 0;
+  itemsWithPfx.forEach(it => {
+    const num = parseInt(it.code.replace(/\D/g, ''), 10);
+    if (!isNaN(num) && num > max) max = num;
+  });
+  $('newNum').value = max > 0 ? max + 1 : 1;
 }
 
 $('closeEdit').onclick = closeEditModal;
@@ -1646,6 +1895,8 @@ function bindPrefixGroup(){
     b.onclick = () => {
       newPrefix = b.dataset.pfx;
       $('prefixGroup').querySelectorAll('.pfx').forEach(x => x.classList.toggle('active', x===b));
+      $('eventField').style.display = newPrefix === 'L' ? '' : 'none';
+      autoFillFromName();
     };
   });
 }
@@ -1659,15 +1910,16 @@ $('saveNew').onclick = ()=>{
   const note = $('newNote').value.trim();
   const location = $('newLocation').value.trim();
   const location_ja = $('newLocationJa').value.trim();
+  const event = newEventCat;
 
   if (editingCode) {
     const isCustom = customItems.some(it => it.code === editingCode);
     if (isCustom) {
       const idx = customItems.findIndex(it => it.code === editingCode);
-      customItems[idx] = {code: editingCode, name, name_ja: nameJa, note, location, variants: [...newVariants]};
+      customItems[idx] = {code: editingCode, name, name_ja: nameJa, note, location, event, variants: [...newVariants]};
       saveCustom();
     } else {
-      overrides[editingCode] = {name, name_ja: nameJa, note, location, variants: [...newVariants]};
+      overrides[editingCode] = {name, name_ja: nameJa, note, location, event, variants: [...newVariants]};
       saveOverrides();
     }
     closeEditModal();
@@ -1688,12 +1940,9 @@ $('saveNew').onclick = ()=>{
       return;
     }
   }
-  customItems.push({code, name, name_ja: nameJa, note, location, variants:[...newVariants]});
+  customItems.push({code, name, name_ja: nameJa, note, location, event, variants:[...newVariants]});
   saveCustom();
-  $('newNum').value = ''; $('newName').value = ''; $('newNameJa').value = ''; $('newNote').value = ''; $('newLocation').value = '';
-  newVariants = [true,true,true,true,true,true,true,true];
-  renderColorToggle();
-  renderCustomList();
+  closeEditModal();
   render();
 };
 
@@ -2027,6 +2276,8 @@ $('toggleLang').onclick = () => {
   localStorage.setItem('pikmin_lang', lang);
   render();
 };
+
+
 $('toggleDark').onclick = () => {
   document.documentElement.classList.add('theme-transitioning');
   applyDark(!document.documentElement.classList.contains('dark'));

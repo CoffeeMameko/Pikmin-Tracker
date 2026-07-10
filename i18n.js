@@ -1,6 +1,7 @@
 const I18N = {
   zh: {
     title: "Pikmin Bloom 圖鑑",
+    btnSearch: "搜尋",
     search: "搜尋名稱、編號或地點",
     clearSearch: "清除搜尋",
     help: "說明",
@@ -91,7 +92,8 @@ const I18N = {
   },
   ja: {
     title: "Pikmin Bloom 図鑑",
-    search: "名前、番号、場所で検索",
+    btnSearch: "検索",
+    search: "名前、番号または場所で検索",
     clearSearch: "検索をクリア",
     help: "ヘルプ",
     toggleDark: "ダークモード切替",
