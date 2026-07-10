@@ -1809,7 +1809,7 @@ const DATA = {
     {
       "code": "L26",
       "name": "禮物貼紙・金色",
-      "name_ja": "プレゼントシール",
+      "name_ja": "金のプレゼントシール",
       "note": "",
       "variants": [
         true,
@@ -1841,7 +1841,7 @@ const DATA = {
     {
       "code": "L28",
       "name": "兔子蛋",
-      "name_ja": "うさぎの卵",
+      "name_ja": "うさぎエッグ",
       "note": "",
       "variants": [
         true,
