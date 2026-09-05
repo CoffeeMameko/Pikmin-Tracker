@@ -307,8 +307,7 @@ h1{font-size:36px;font-weight:700;letter-spacing:.08em;color:var(--ink);white-sp
 .suggestion-num{display:flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--line);color:var(--bg);font-size:10px;font-weight:bold;font-family:sans-serif;}
 
 body.edit-mode .edit-item{display:inline-block}
-body.edit-mode #openEdit{color:var(--ink);font-weight:600}
-.add-fab, .menu-fab {
+.add-fab, .edit-fab, .menu-fab {
   position:fixed; right:20px; width:48px; height:48px;
   border-radius:50%; 
   border: 1px solid rgba(255,255,255,0.3);
@@ -323,9 +322,15 @@ body.edit-mode #openEdit{color:var(--ink);font-weight:600}
   transition:all .2s cubic-bezier(0.4, 0, 0.2, 1);
   display:flex; align-items:center; justify-content:center; z-index:999;
 }
-.add-fab { bottom: 78px; }
+.add-fab { bottom: 136px; }
+.edit-fab { bottom: 78px; }
 .menu-fab { bottom: 20px; z-index:1000; }
-.add-fab:hover, .menu-fab:hover {
+body.edit-mode .edit-fab {
+  background: var(--ink);
+  color: var(--bg);
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
+}
+.add-fab:hover, .edit-fab:hover, .menu-fab:hover {
   transform:translateY(-2px);
   background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.2) 100%);
   box-shadow: 
@@ -333,7 +338,7 @@ body.edit-mode #openEdit{color:var(--ink);font-weight:600}
     inset 0 2px 4px rgba(255,255,255,0.9),
     inset 0 -2px 4px rgba(0,0,0,0.05);
 }
-:root.dark .add-fab, :root.dark .menu-fab {
+:root.dark .add-fab, :root.dark .edit-fab, :root.dark .menu-fab {
   border-color: rgba(255,255,255,0.1);
   background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
   color: rgba(255,255,255,0.9);
@@ -342,14 +347,19 @@ body.edit-mode #openEdit{color:var(--ink);font-weight:600}
     inset 0 2px 4px rgba(255,255,255,0.2),
     inset 0 -2px 4px rgba(0,0,0,0.2);
 }
-:root.dark .add-fab:hover, :root.dark .menu-fab:hover {
+:root.dark body.edit-mode .edit-fab {
+  background: var(--ink);
+  color: var(--bg);
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+}
+:root.dark .add-fab:hover, :root.dark .edit-fab:hover, :root.dark .menu-fab:hover {
   background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 100%);
   box-shadow: 
     0 12px 36px rgba(0,0,0,0.5),
     inset 0 2px 4px rgba(255,255,255,0.3),
     inset 0 -2px 4px rgba(0,0,0,0.2);
 }
-.add-fab svg { width:24px; height:24px; }
+.add-fab svg, .edit-fab svg { width:24px; height:24px; }
 .progress-frame{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1;overflow:visible;transform:translateZ(0)}
 .progress-frame rect{fill:none;stroke:var(--frame-norm);stroke-width:2;
   x: 1px; y: 1px; width: calc(100% - 2px); height: calc(100% - 2px);
@@ -722,8 +732,12 @@ body:has(.modal:not([hidden])){overflow:hidden}
     <div class="field">
       <label data-i18n="labelLocation">地點(可留空)</label>
       <input id="newLocation" data-i18n-placeholder="placeholderLocation" placeholder="例：餐廳、咖啡廳">
-      <input id="newLocationJa" style="display:none;">
       <div id="locationSuggestions" class="suggestions-container"></div>
+    </div>
+    <div class="field">
+      <label data-i18n="labelLocationJa">日文地點(選填)</label>
+      <input id="newLocationJa" data-i18n-placeholder="placeholderLocationJa" placeholder="例：レストラン、カフェ">
+      <div id="locationJaSuggestions" class="suggestions-container"></div>
     </div>
     <div class="field" id="eventField" style="display:none">
       <label data-i18n="labelEvent">特殊活動分類(僅限限定系列)</label>
@@ -829,6 +843,12 @@ body:has(.modal:not([hidden])){overflow:hidden}
     <line x1="5" y1="12" x2="19" y2="12"></line>
   </svg>
 </button>
+<button class="edit-fab" id="openEdit" aria-label="編輯模式">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 20h9"></path>
+    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+  </svg>
+</button>
 <button class="menu-fab" id="menuFab" aria-label="選單">
   <svg class="icon-disk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
@@ -841,7 +861,6 @@ body:has(.modal:not([hidden])){overflow:hidden}
   </svg>
 </button>
 <div class="menu-popup" id="menuPopup" hidden>
-  <button class="btn-link" id="openEdit" data-i18n="btnEditMode">編輯</button>
   <button class="btn-link" id="exportData" data-i18n="exportJson">匯出 JSON</button>
   <button class="btn-link" id="importData" data-i18n="importJson">匯入 JSON</button>
   <button class="btn-link" id="exportCsv" data-i18n="exportCsv">匯出 Excel</button>
@@ -898,6 +917,27 @@ const OVERRIDES_KEY = 'pikmin_bloom_overrides_v1';
 let overrides = {};
 try { overrides = JSON.parse(localStorage.getItem(OVERRIDES_KEY) || '{}'); } catch(e){ overrides = {}; }
 const saveOverrides = () => localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides));
+
+(function fillMissingLocationJa() {
+  const locMap = {};
+  ITEMS.forEach(it => {
+    if (it.location && it.location_ja) locMap[it.location] = it.location_ja;
+  });
+  let updated = false;
+  customItems.forEach(it => {
+    if (it.location && (!it.location_ja || it.location_ja === '') && locMap[it.location]) {
+      it.location_ja = locMap[it.location];
+      updated = true;
+    }
+  });
+  Object.values(overrides).forEach(o => {
+    if (o.location && (!o.location_ja || o.location_ja === '') && locMap[o.location]) {
+      o.location_ja = locMap[o.location];
+      updated = true;
+    }
+  });
+  if (updated) { saveCustom(); saveOverrides(); }
+})();
 
 let editingCode = null;
 
@@ -1692,6 +1732,7 @@ function openEditFor(code){
   $('newNameJa').value = item.name_ja || '';
   $('newNote').value = item.note || '';
   $('newLocation').value = item.location || '';
+  $('newLocationJa').value = item.location_ja || '';
   newEventCat = item.event || '';
   $('eventField').style.display = code.startsWith('L') ? '' : 'none';
   newVariants = [...item.variants];
@@ -1742,6 +1783,7 @@ function openNewModal(prefix){
   $('newNote').value = '';
   $('newLocation').value = '';
   $('locationSuggestions').innerHTML = '';
+  $('locationJaSuggestions').innerHTML = '';
   $('newLocationJa').value = '';
   $('newNum').value = '';
   newEventCat = '';
@@ -1762,9 +1804,9 @@ function openNewModal(prefix){
   $('editModal').hidden = false;
 }
 
-let userEdited = { num: false, name: false, nameJa: false, location: false, variants: false };
+let userEdited = { num: false, name: false, nameJa: false, location: false, locationJa: false, variants: false };
 function resetUserEdited() {
-  userEdited = { num: false, name: false, nameJa: false, location: false, variants: false };
+  userEdited = { num: false, name: false, nameJa: false, location: false, locationJa: false, variants: false };
 }
 
 $('newNum').addEventListener('input', () => { 
@@ -1794,11 +1836,13 @@ function renderSuggestions(matches, containerId) {
       userEdited.num = false;
       userEdited.nameJa = false;
       userEdited.location = false;
+      userEdited.locationJa = false;
       userEdited.variants = false;
       fillDataFromMatch(match);
       $('nameSuggestions').innerHTML = '';
       $('nameJaSuggestions').innerHTML = '';
       $('locationSuggestions').innerHTML = '';
+      $('locationJaSuggestions').innerHTML = '';
     };
     container.appendChild(btn);
   });
@@ -1847,6 +1891,19 @@ $('newLocation').addEventListener('input', () => {
   renderSuggestions(matches, 'locationSuggestions');
 });
 
+$('newLocationJa').addEventListener('input', () => { 
+  userEdited.locationJa = true; 
+  if (editingCode) return;
+  const val = $('newLocationJa').value.trim().toLowerCase();
+  $('locationJaSuggestions').innerHTML = '';
+  if (!val) return;
+  const matches = allItems().filter(it => 
+    (it.location_ja && it.location_ja.toLowerCase().includes(val)) ||
+    (it.location && it.location.toLowerCase().includes(val))
+  );
+  renderSuggestions(matches, 'locationJaSuggestions');
+});
+
 function autoFillFromNum() {
   if (editingCode) return;
   const numVal = parseInt($('newNum').value, 10);
@@ -1870,7 +1927,9 @@ function fillDataFromMatch(match) {
   }
   if (!userEdited.location && match.location) {
     $('newLocation').value = match.location;
-    if (match.location_ja) $('newLocationJa').value = match.location_ja;
+  }
+  if (!userEdited.locationJa && match.location_ja) {
+    $('newLocationJa').value = match.location_ja;
   }
   if (!userEdited.variants && match.variants) {
     newVariants = [...match.variants];
@@ -1892,6 +1951,11 @@ $('closeEdit').onclick = closeEditModal;
 $('editModal').onclick = (e)=>{ if (e.target.id === 'editModal') closeEditModal(); };
 $('editModal').addEventListener('keydown', e => {
   if (e.key === 'Enter') {
+    if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
+      document.activeElement.blur();
+      e.preventDefault();
+      return;
+    }
     e.preventDefault();
     $('saveNew').click();
   }
@@ -1925,10 +1989,10 @@ $('saveNew').onclick = ()=>{
     const isCustom = customItems.some(it => it.code === editingCode);
     if (isCustom) {
       const idx = customItems.findIndex(it => it.code === editingCode);
-      customItems[idx] = {code: editingCode, name, name_ja: nameJa, note, location, event, variants: [...newVariants]};
+      customItems[idx] = {code: editingCode, name, name_ja: nameJa, note, location, location_ja, event, variants: [...newVariants]};
       saveCustom();
     } else {
-      overrides[editingCode] = {name, name_ja: nameJa, note, location, event, variants: [...newVariants]};
+      overrides[editingCode] = {name, name_ja: nameJa, note, location, location_ja, event, variants: [...newVariants]};
       saveOverrides();
     }
     closeEditModal();
@@ -1949,7 +2013,7 @@ $('saveNew').onclick = ()=>{
       return;
     }
   }
-  customItems.push({code, name, name_ja: nameJa, note, location, event, variants:[...newVariants]});
+  customItems.push({code, name, name_ja: nameJa, note, location, location_ja, event, variants:[...newVariants]});
   saveCustom();
   closeEditModal();
   render();
@@ -2252,6 +2316,8 @@ $('openHelp').onclick = () => { $('helpModal').hidden = false; };
 $('closeHelp').onclick = () => { $('helpModal').hidden = true; };
 $('helpModal').onclick = (e) => { if (e.target.id === 'helpModal') $('helpModal').hidden = true; };
 
+$('addFab').onclick = () => { openNewModal('N'); };
+
 $('menuFab').onclick = (e) => {
   e.stopPropagation();
   const popup = $('menuPopup');
@@ -2260,6 +2326,10 @@ $('menuFab').onclick = (e) => {
 };
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
+    if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
+      document.activeElement.blur();
+      return;
+    }
     if (!$('editModal').hidden) closeEditModal();
     else if (!$('helpModal').hidden) $('helpModal').hidden = true;
   }
