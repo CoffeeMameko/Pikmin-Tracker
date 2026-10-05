@@ -952,7 +952,9 @@ const allItems = () => {
     }
     return it;
   });
-  return [...merged, ...customItems];
+  const existingCodes = new Set(merged.map(it => it.code));
+  const uniqueCustom = customItems.filter(ci => !existingCodes.has(ci.code));
+  return [...merged, ...uniqueCustom];
 };
 
 let filterCat = 'all';
@@ -2052,11 +2054,14 @@ $('importFile').onchange = (e) => {
       if (!data.collected || !Array.isArray(data.customItems)) {
         alert('檔案格式不正確'); return;
       }
-      const msg = `即將匯入・\n・收集紀錄 ${Object.keys(data.collected).length} 筆\n・自訂系列 ${data.customItems.length} 個\n・修改 ${Object.keys(data.overrides || {}).length} 筆\n\n會覆蓋目前的紀錄，確定繼續？`;
+      const msg = `即將匯入・\n・收集紀錄 ${Object.keys(data.collected).length} 筆\n・自訂系列 ${data.customItems.length} 個\n・修改 ${Object.keys(data.overrides || {}).length} 筆\n\n將與目前紀錄合併（取聯集），確定繼續？`;
       if (!confirm(msg)) return;
-      collected = data.collected;
-      customItems = data.customItems;
-      overrides = data.overrides || {};
+      Object.assign(collected, data.collected);
+      const existingCustomCodes = new Set(customItems.map(c => c.code));
+      data.customItems.forEach(ci => {
+        if (!existingCustomCodes.has(ci.code)) customItems.push(ci);
+      });
+      Object.assign(overrides, data.overrides || {});
       save();
       saveCustom();
       saveOverrides();
@@ -2292,15 +2297,18 @@ $('importCsvFile').onchange = async (e) => {
     }
     
     const formatName = file.name.endsWith('.csv') ? 'CSV' : 'Excel';
-    const msg = `即將匯入 ${formatName}：\n・收集紀錄 ${Object.keys(newCollected).length} 筆\n・自訂系列 ${newCustomItems.length} 個\n・修改 ${Object.keys(newOverrides).length} 筆\n\n會覆蓋目前的紀錄，確定繼續？`;
+    const msg = `即將匯入 ${formatName}：\n・收集紀錄 ${Object.keys(newCollected).length} 筆\n・自訂系列 ${newCustomItems.length} 個\n・修改 ${Object.keys(newOverrides).length} 筆\n\n將與目前紀錄合併（取聯集），確定繼續？`;
     if (!confirm(msg)) {
       e.target.value = '';
       return;
     }
     
-    collected = newCollected;
-    customItems = newCustomItems;
-    overrides = newOverrides;
+    Object.assign(collected, newCollected);
+    const existingCustomCodes = new Set(customItems.map(c => c.code));
+    newCustomItems.forEach(ci => {
+      if (!existingCustomCodes.has(ci.code)) customItems.push(ci);
+    });
+    Object.assign(overrides, newOverrides);
     save();
     saveCustom();
     saveOverrides();
