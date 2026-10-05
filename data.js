@@ -123,10 +123,11 @@ const DATA = {
         true,
         true,
         true,
-        false
+        true
       ],
       "location": "藥局",
-      "location_ja": "薬局"
+      "location_ja": "薬局",
+      "event": ""
     },
     {
       "code": "N07",
@@ -285,10 +286,11 @@ const DATA = {
         true,
         true,
         true,
-        false
+        true
       ],
       "location": "車站",
-      "location_ja": "駅"
+      "location_ja": "駅",
+      "event": ""
     },
     {
       "code": "N16",
@@ -411,10 +413,11 @@ const DATA = {
         true,
         true,
         true,
-        false
+        true
       ],
       "location": "麵包店",
-      "location_ja": "パン屋"
+      "location_ja": "パン屋",
+      "event": ""
     },
     {
       "code": "N23",
@@ -627,10 +630,11 @@ const DATA = {
         true,
         true,
         true,
-        false
+        true
       ],
       "location": "體育館",
-      "location_ja": "スタジアム"
+      "location_ja": "スタジアム",
+      "event": ""
     },
     {
       "code": "N35",
@@ -1210,7 +1214,7 @@ const DATA = {
     },
     {
       "code": "N67",
-      "name": "文具店",
+      "name": "文具",
       "name_ja": "文房具",
       "note": "",
       "variants": [
@@ -1227,6 +1231,44 @@ const DATA = {
       "location_ja": "文房具店"
     },
     {
+      "code": "N68",
+      "name": "機場行李吊牌",
+      "name_ja": "手荷物タグ",
+      "note": "",
+      "location": "機場",
+      "event": "",
+      "variants": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "location_ja": "空港"
+    },
+    {
+      "code": "N69",
+      "name": "糕點",
+      "name_ja": "ペストリー",
+      "note": "",
+      "location": "麵包店",
+      "location_ja": "ベーカリー",
+      "event": "",
+      "variants": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
       "code": "R01",
       "name": "稀有廚師帽",
       "name_ja": "レアシェフの帽子",
@@ -1239,7 +1281,7 @@ const DATA = {
         true,
         true,
         true,
-        false
+        true
       ],
       "location": "餐廳",
       "location_ja": "レストラン"
@@ -1407,6 +1449,44 @@ const DATA = {
       "location_ja": "みちばた"
     },
     {
+      "code": "R39",
+      "name": "主題樂園票券A",
+      "name_ja": "テーマパークのチケットA",
+      "note": "",
+      "location": "主題樂園",
+      "event": "",
+      "variants": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "location_ja": "テーマパーク"
+    },
+    {
+      "code": "R40",
+      "name": "主題樂園票券B",
+      "name_ja": "テーマパークのチケットB",
+      "note": "",
+      "location": "主題樂園",
+      "event": "",
+      "variants": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "location_ja": "テーマパーク"
+    },
+    {
       "code": "L01",
       "name": "超級瑪利歐鑰匙圈",
       "name_ja": "スーパーマリオのキーホルダー",
@@ -1420,7 +1500,9 @@ const DATA = {
         false,
         false,
         false
-      ]
+      ],
+      "location": "",
+      "event": "特別なイベント"
     },
     {
       "code": "L02",
@@ -1809,7 +1891,7 @@ const DATA = {
     {
       "code": "L26",
       "name": "禮物貼紙・金色",
-      "name_ja": "金のプレゼントシール",
+      "name_ja": "プレゼントシール",
       "note": "",
       "variants": [
         true,
@@ -1817,10 +1899,12 @@ const DATA = {
         true,
         true,
         true,
-        false,
+        true,
         true,
         false
-      ]
+      ],
+      "location": "",
+      "event": "特別なイベント"
     },
     {
       "code": "L27",
@@ -1840,7 +1924,7 @@ const DATA = {
     },
     {
       "code": "L28",
-      "name": "兔子蛋",
+      "name": "兔寶寶彩蛋",
       "name_ja": "うさぎエッグ",
       "note": "",
       "variants": [
@@ -1852,7 +1936,9 @@ const DATA = {
         true,
         true,
         false
-      ]
+      ],
+      "location": "",
+      "event": ""
     },
     {
       "code": "L29",
@@ -1995,8 +2081,10 @@ const DATA = {
         true,
         true,
         true,
-        true
-      ]
+        false
+      ],
+      "location": "",
+      "event": ""
     },
     {
       "code": "L38",
@@ -2146,7 +2234,7 @@ const DATA = {
       "code": "L47",
       "name": "撲克牌・梅花 I",
       "name_ja": "トランプ・クラブI",
-      "note": "紅3 黃4 藍A 白Q 紫9 岩6 粉2",
+      "note": "",
       "variants": [
         true,
         true,
@@ -2156,13 +2244,15 @@ const DATA = {
         true,
         true,
         false
-      ]
+      ],
+      "location": "",
+      "event": "世界のあそび"
     },
     {
       "code": "L48",
       "name": "撲克牌・梅花 II",
       "name_ja": "トランプ・クラブII",
-      "note": "紅5 黃J 藍8 紫K 岩10 粉7",
+      "note": "",
       "variants": [
         true,
         true,
@@ -2172,13 +2262,15 @@ const DATA = {
         true,
         true,
         false
-      ]
+      ],
+      "location": "",
+      "event": "世界のあそび"
     },
     {
       "code": "L49",
       "name": "撲克牌・菱形 I",
       "name_ja": "トランプ・ダイヤI",
-      "note": "紅A 黃2 藍3 白4 紫6 岩7 粉5",
+      "note": "",
       "variants": [
         true,
         true,
@@ -2188,13 +2280,15 @@ const DATA = {
         true,
         true,
         false
-      ]
+      ],
+      "location": "",
+      "event": "世界のあそび"
     },
     {
       "code": "L50",
       "name": "撲克牌・菱形 II",
       "name_ja": "トランプ・ダイヤII",
-      "note": "紅8 黃9 藍10 白J 岩K 粉Q",
+      "note": "",
       "variants": [
         true,
         true,
@@ -2204,7 +2298,9 @@ const DATA = {
         true,
         true,
         false
-      ]
+      ],
+      "location": "",
+      "event": "世界のあそび"
     },
     {
       "code": "L51",
@@ -2220,7 +2316,9 @@ const DATA = {
         false,
         false,
         false
-      ]
+      ],
+      "location": "",
+      "event": "世界のあそび"
     },
     {
       "code": "L52",
@@ -2320,7 +2418,7 @@ const DATA = {
     },
     {
       "code": "L58",
-      "name": "2025派對禮炮",
+      "name": "2025派對拉炮",
       "name_ja": "パーティークラッカー2025",
       "note": "",
       "variants": [
@@ -2332,7 +2430,9 @@ const DATA = {
         true,
         true,
         false
-      ]
+      ],
+      "location": "",
+      "event": ""
     },
     {
       "code": "L59",
@@ -2380,7 +2480,9 @@ const DATA = {
         true,
         true,
         false
-      ]
+      ],
+      "location": "",
+      "event": "世界のグルメ"
     },
     {
       "code": "L62",
@@ -2396,11 +2498,13 @@ const DATA = {
         true,
         true,
         false
-      ]
+      ],
+      "location": "",
+      "event": "世界のあそび"
     },
     {
       "code": "L63",
-      "name": "迷你樂器",
+      "name": "迷你樂器・銅管樂團",
       "name_ja": "ミニ楽器・ブラスバンド",
       "note": "",
       "variants": [
@@ -2412,7 +2516,9 @@ const DATA = {
         true,
         true,
         false
-      ]
+      ],
+      "location": "",
+      "event": ""
     },
     {
       "code": "L64",
@@ -2443,8 +2549,10 @@ const DATA = {
         true,
         true,
         true,
-        false
-      ]
+        true
+      ],
+      "location": "",
+      "event": ""
     },
     {
       "code": "L66",
@@ -2459,8 +2567,11 @@ const DATA = {
         true,
         true,
         true,
-        false
-      ]
+        true
+      ],
+      "location": "",
+      "location_ja": "",
+      "event": "世界のグルメ"
     },
     {
       "code": "L67",
@@ -2476,7 +2587,9 @@ const DATA = {
         false,
         false,
         false
-      ]
+      ],
+      "location": "",
+      "event": "特別なイベント"
     },
     {
       "code": "L68",
@@ -2528,7 +2641,7 @@ const DATA = {
     },
     {
       "code": "L71",
-      "name": "2025裝飾品",
+      "name": "2025裝飾",
       "name_ja": "オーナメント2025",
       "note": "",
       "variants": [
@@ -2540,7 +2653,9 @@ const DATA = {
         true,
         true,
         true
-      ]
+      ],
+      "location": "",
+      "event": ""
     },
     {
       "code": "L72",
@@ -2572,7 +2687,9 @@ const DATA = {
         true,
         true,
         true
-      ]
+      ],
+      "location": "",
+      "event": "世界のグルメ"
     },
     {
       "code": "L74",
@@ -2620,7 +2737,9 @@ const DATA = {
         true,
         true,
         true
-      ]
+      ],
+      "location": "",
+      "event": "世界のおまつり"
     },
     {
       "code": "L77",
@@ -2652,13 +2771,89 @@ const DATA = {
         true,
         true,
         true
-      ]
+      ],
+      "location": "",
+      "event": "世界のあそび"
     },
     {
       "code": "L79",
       "name": "花冠",
       "name_ja": "花かんむり",
       "note": "2026 June",
+      "variants": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "code": "L80",
+      "name": "迷你樂器・管弦樂團",
+      "name_ja": "",
+      "note": "2026 July",
+      "location": "",
+      "location_ja": "",
+      "event": "",
+      "variants": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "code": "L81",
+      "name": "峇里島雕刻",
+      "name_ja": "バリの木彫りアニマル",
+      "note": "2026 Aug",
+      "location": "",
+      "event": "",
+      "variants": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "code": "L82",
+      "name": "香腸",
+      "name_ja": "ソーセージ",
+      "note": "2026 Sept.",
+      "location": "",
+      "event": "世界のグルメ",
+      "variants": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "code": "L83",
+      "name": "萬聖節彩繪玻璃",
+      "name_ja": "ハロウィン・ステンドグラス",
+      "note": "2026 October",
+      "location": "",
+      "location_ja": "",
+      "event": "",
       "variants": [
         true,
         true,
